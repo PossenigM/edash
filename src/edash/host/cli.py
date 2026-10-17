@@ -26,6 +26,7 @@ def main(argv: list[str] | None = None) -> None:
 
     p = with_config(sub.add_parser("run", help="run the host (connects to the display, polls sources)"))
     p.add_argument("--tray", action="store_true", help="show a tray icon")
+    p.add_argument("--demo", action="store_true", help="sample mail/calendar/Teams data instead of Microsoft 365")
 
     p = with_config(sub.add_parser("preview", help="render screens with sample data to PNG files"))
     p.add_argument("--screen", action="append", help="screen id (repeatable; default: all)")
@@ -97,7 +98,7 @@ def cmd_run(args: argparse.Namespace) -> None:
     handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
     logging.getLogger().addHandler(handler)
 
-    app = HostApp(path, platform)
+    app = HostApp(path, platform, demo=args.demo)
     try:
         app.open_control_server()
     except AlreadyRunning as err:

@@ -131,3 +131,10 @@ def test_throttled_source_waits_for_retry_after(app):
     app._run_source(item)
     assert item.status == "throttled, retrying in 120 s"
     assert item.next_run - before == pytest.approx(120, abs=1)
+
+
+def test_demo_mode_replaces_graph_sources(tmp_path):
+    config = tmp_path / "config.yaml"
+    shutil.copyfile(EXAMPLE_CONFIG, config)
+    app = HostApp(config, FakePlatform(tmp_path), demo=True)
+    assert sorted(item.source.topic for item in app._scheduled) == ["calendar", "mail", "teams", "weather"]

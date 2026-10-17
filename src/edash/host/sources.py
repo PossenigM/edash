@@ -35,6 +35,7 @@ from edash.protocol import (
     WeatherDay,
     WeatherMsg,
 )
+from edash.render.sample import sample_state
 from edash.timeutil import start_of_day
 
 log = logging.getLogger(__name__)
@@ -233,11 +234,29 @@ class TeamsSource(Source):
         return TeamsMsg(data=TeamsData(unread_count=sum(i.unread for i in items), items=items))
 
 
-def build_sources(config: Config, session: requests.Session, platform: Platform) -> list[Source]:
+class DemoSource(Source):
+    """Sample mail, calendar or Teams data, for trying the display without Microsoft 365."""
+
+    def __init__(self, topic: str):
+        super().__init__(timedelta(minutes=1))
+        self.topic = topic
+
+    def fetch(self, now: datetime) -> DataMessage:
+        state = sample_state(now)
+        return {
+            "mail": lambda: MailMsg(data=state.mail),
+            "calendar": lambda: CalendarMsg(data=state.calendar),
+            "teams": lambda: TeamsMsg(data=state.teams),
+        }[self.topic]()
+
+
+def build_sources(config: Config, session: requests.Session, platform: Platform, demo: bool = False) -> list[Source]:
     s = config.sources
     sources: list[Source] = []
     if s.weather and s.weather.enabled:
         sources.append(WeatherSource(s.weather, session))
+    if demo:
+        return sources + [DemoSource(topic) for topic in ("mail", "calendar", "teams")]
 
     wanted = [(cfg, cls) for cfg, cls in ((s.mail, MailSource), (s.calendar, CalendarSource), (s.teams, TeamsSource)) if cfg.enabled]
     if not wanted:

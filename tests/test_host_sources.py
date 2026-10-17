@@ -168,3 +168,12 @@ def test_graph_throttling_reports_retry_after():
     with pytest.raises(GraphError) as info:
         GraphClient(Auth(), Session(Response(403, {}))).get("/me")
     assert info.value.retry_after is None
+
+
+def test_demo_sources_produce_sample_data(now):
+    from edash.host.sources import DemoSource
+
+    messages = {topic: DemoSource(topic).fetch(now) for topic in ("mail", "calendar", "teams")}
+    assert messages["mail"].data.unread_count > 0
+    assert messages["calendar"].data.events
+    assert messages["teams"].data.items

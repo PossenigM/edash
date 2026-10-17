@@ -144,6 +144,9 @@ adds `/dev/edash`, gives your user access (`uaccess`), and stops
 ModemManager from probing the port. Without a keyring, the login token falls
 back to a file readable only by you, and the host logs a warning.
 
+To try the display without Microsoft 365, run `edash-host run --demo`. The
+weather is real; mail, calendar and Teams show sample data.
+
 `edash-host ctl screen meeting|auto`, `ctl refresh`, `ctl fetch`, `ctl status`
 control a running host. The tray menu offers the same commands.
 

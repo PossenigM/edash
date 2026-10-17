@@ -74,9 +74,10 @@ class HostStatus:
 
 
 class HostApp:
-    def __init__(self, config_path: Path, platform: Platform):
+    def __init__(self, config_path: Path, platform: Platform, demo: bool = False):
         self.config_path = config_path
         self.platform = platform
+        self.demo = demo  # sample mail/calendar/Teams data instead of Microsoft Graph
         self.config: Config = load_config(config_path)
         self._config_mtime = config_path.stat().st_mtime
         self.status = HostStatus()
@@ -196,7 +197,7 @@ class HostApp:
         return session
 
     def _schedule_sources(self) -> list[_Scheduled]:
-        return [_Scheduled(s) for s in build_sources(self.config, self._session, self.platform)]
+        return [_Scheduled(s) for s in build_sources(self.config, self._session, self.platform, demo=self.demo)]
 
     def _check_config_file(self, force: bool = False) -> None:
         try:
