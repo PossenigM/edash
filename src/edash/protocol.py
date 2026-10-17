@@ -1,6 +1,6 @@
 """Messages exchanged between host and device: one JSON object per line.
 
-Host -> device: hello, time, config, mail, calendar, teams, weather, command.
+Host -> device: hello, time, config, mail, calendar, teams, weather, presence, command.
 Device -> host: hello, ack, error, status.
 
 The host re-sends its full snapshot whenever a connection is (re)established,
@@ -105,24 +105,41 @@ class ConfigMsg(_Message):
     config: dict[str, Any]  # validated as DeviceConfig on the device
 
 
-class MailMsg(_Message):
+class _DataMessage(_Message):
+    # When the host fetched the data, and until when it counts as current. The
+    # host re-sends cached data periodically, so the arrival time says nothing
+    # about freshness; widgets show an "as of" marker once fresh_until passes.
+    fetched_at: AwareDatetime | None = None
+    fresh_until: AwareDatetime | None = None
+
+
+class MailMsg(_DataMessage):
     type: Literal["mail"] = "mail"
     data: MailData
 
 
-class CalendarMsg(_Message):
+class CalendarMsg(_DataMessage):
     type: Literal["calendar"] = "calendar"
     data: CalendarData
 
 
-class TeamsMsg(_Message):
+class TeamsMsg(_DataMessage):
     type: Literal["teams"] = "teams"
     data: TeamsData
 
 
-class WeatherMsg(_Message):
+class WeatherMsg(_DataMessage):
     type: Literal["weather"] = "weather"
     data: WeatherData
+
+
+class Presence(_Message):
+    """Whether the user is at the laptop. While away, the device shows the away screen."""
+
+    type: Literal["presence"] = "presence"
+    away: bool
+    reason: str | None = None  # "locked", "sleep", "shutdown", "stopped"
+    since: AwareDatetime | None = None
 
 
 class Command(_Message):
@@ -155,7 +172,7 @@ DataMessage = MailMsg | CalendarMsg | TeamsMsg | WeatherMsg
 DATA_TOPICS = ("mail", "calendar", "teams", "weather")
 
 Message = Annotated[
-    Union[Hello, TimeSync, ConfigMsg, MailMsg, CalendarMsg, TeamsMsg, WeatherMsg, Command, Ack, Error, Status],
+    Union[Hello, TimeSync, ConfigMsg, MailMsg, CalendarMsg, TeamsMsg, WeatherMsg, Presence, Command, Ack, Error, Status],
     Field(discriminator="type"),
 ]
 _message_adapter: TypeAdapter[Message] = TypeAdapter(Message)

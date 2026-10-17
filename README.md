@@ -53,6 +53,28 @@ Linux). `edash-host check` validates it. Errors name the exact place, e.g.
 - **Per widget**: `title`, `frame: true`, and widget-specific `options` (unknown keys are errors).
 - **Rotation**: the first matching rule wins, otherwise `default`. Example: `meeting_starts_in <= 5m`, `time in 18:30-07:00 and not meeting_active`.
 
+### Away screen
+
+When you lock the laptop, it goes to sleep, shuts down or the host stops, the
+display switches to an away screen. It shows the reason, the time and your
+next meeting. It has no clock on purpose: the Pi may lose power along with
+the laptop, and a frozen clock would show the wrong time. Unlocking or
+resuming switches back. Set `rotation.away_screen` to use one of your own
+screens instead (the `away` widget is available there too).
+
+- **Windows**: a hidden window receives lock/unlock, sleep/resume and shutdown messages. Windows allows only about 2 s at suspend; locking first (Win+L) gives the panel more time.
+- **Linux**: events come from systemd-logind (D-Bus, via `jeepney`). The host holds a logind delay lock, so suspend/shutdown waits up to 4 s for the away frame.
+
+If USB power drops in the middle of a refresh, the panel may show a partly drawn frame until the next start.
+
+### Outdated data
+
+The host stamps every fetch with `fetched_at` and `fresh_until`: three poll
+intervals, but at least 10 minutes. If a source stops updating (login expired,
+network gone), the widget gets an inverted **"as of 09:12"** label in its title
+bar or top-right corner. A fresh fetch removes it. Turn it off per widget with
+`show_stale: false`.
+
 ### Widgets
 
 | Type | Shows | Main options |
@@ -66,6 +88,7 @@ Linux). `edash-host check` validates it. Errors name the exact place, e.g.
 | `reminder` | Recurring reminder, inverted when due | `label`, `every`, `active`, `days`, `highlight_for`, `icon` |
 | `text` | Static text | `text`, `size`, `bold`, `align`, `invert` |
 | `status` | Laptop connection, last update | `font_size`, `align` |
+| `away` | Away reason, time, next meeting (for custom away screens) | `title`, `message`, `show_next_meeting` |
 
 Icons for reminders: `drop`, `stand`, `eye`, `mail`, `chat`, `calendar`, `sun`, ….
 
@@ -172,3 +195,4 @@ edash-host run --config my-config.yaml     # with host.port: /tmp/edash-host
 - Rotation (`display.rotation`): find the right value with the self-test's UP arrow.
 - Composite gadget enumeration on your laptop (two COM ports appear without driver prompts).
 - Graph queries against your tenant, especially Teams unread detection (`viewpoint.lastMessageReadDateTime`).
+- Away screen timing: whether the frame finishes before your laptop cuts USB power on sleep/shutdown. The Windows event window is covered by a test that only runs on Windows (CI or your laptop).

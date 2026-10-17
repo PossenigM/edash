@@ -2,12 +2,22 @@ from __future__ import annotations
 
 import re
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any
+from typing import Any, Protocol
 
 import platformdirs
 
 from edash.usb import USB_PID, USB_VID
+
+# Receives "lock", "unlock", "suspend", "resume" or "shutdown". Called from a
+# background thread; on suspend/shutdown the OS waits only briefly, so the
+# callback should just send a message and return.
+EventCallback = Callable[[str], None]
+
+
+class EventWatcher(Protocol):
+    def stop(self) -> None: ...
 
 
 class Platform(ABC):
@@ -55,6 +65,10 @@ class Platform(ABC):
 
         path.parent.mkdir(parents=True, exist_ok=True)
         return build_encrypted_persistence(str(path))
+
+    def start_event_watcher(self, callback: EventCallback) -> EventWatcher | None:
+        """Report lock/sleep/shutdown events; None where unsupported."""
+        return None
 
     @abstractmethod
     def install_autostart(self, config_path: Path) -> list[str]:

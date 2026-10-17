@@ -5,7 +5,7 @@ from itertools import combinations
 
 from pydantic import ValidationError
 
-from edash.config import DeviceConfig, WidgetConfig
+from edash.config import BUILTIN_AWAY_SCREEN, DeviceConfig, ScreenConfig, WidgetConfig
 from edash.errors import ConfigError, format_validation_error
 from edash.render.layout import Box, check_grid_placement, grid_box
 from edash.render.registry import Widget, get_widget_class
@@ -25,14 +25,28 @@ class Screen:
     widgets: list[PlacedWidget]
 
 
+def builtin_away_screen(config: DeviceConfig) -> ScreenConfig:
+    grid = config.display.grid
+    return ScreenConfig(
+        id=BUILTIN_AWAY_SCREEN,
+        widgets=[WidgetConfig(type="away", pos=(0, 0), size=(grid.cols, grid.rows), show_stale=False)],
+    )
+
+
 def build_screens(config: DeviceConfig) -> tuple[dict[str, Screen], list[str]]:
-    """Instantiate and place every widget. Raises ConfigError listing all problems; returns warnings."""
+    """Instantiate and place every widget. Raises ConfigError listing all problems; returns warnings.
+
+    Includes the built-in away screen unless the config names its own.
+    """
     errors: list[str] = []
     warnings: list[str] = []
     screens: dict[str, Screen] = {}
     width, height = config.display.logical_size
+    screen_cfgs = list(config.screens)
+    if config.rotation is None or config.rotation.away_screen is None:
+        screen_cfgs.append(builtin_away_screen(config))
 
-    for screen_cfg in config.screens:
+    for screen_cfg in screen_cfgs:
         placed: list[PlacedWidget] = []
         for index, widget_cfg in enumerate(screen_cfg.widgets):
             label = f"screen '{screen_cfg.id}', widget {index} ({widget_cfg.type})"

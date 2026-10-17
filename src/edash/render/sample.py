@@ -15,7 +15,7 @@ from edash.protocol import (
     WeatherData,
     WeatherDay,
 )
-from edash.state import DashboardState
+from edash.state import Away, DashboardState
 from edash.timeutil import start_of_day
 
 
@@ -81,6 +81,9 @@ def sample_state(now: datetime) -> DashboardState:
         calendar=CalendarData(events=events),
         teams=teams,
         weather=weather,
-        updated={topic: now for topic in DATA_TOPICS},
+        fetched={topic: now for topic in DATA_TOPICS},
+        fresh_until={topic: now + timedelta(minutes=10) for topic in DATA_TOPICS},
         host_connected=True,
+        # Only the away screen reads this; it shows what the screen looks like after a lock.
+        away=Away(reason="locked", since=now - timedelta(minutes=25)),
     )

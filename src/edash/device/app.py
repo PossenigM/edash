@@ -25,6 +25,7 @@ from edash.protocol import (
     Hello,
     MailMsg,
     Message,
+    Presence,
     Status,
     TeamsMsg,
     TimeSync,
@@ -32,7 +33,7 @@ from edash.protocol import (
 )
 from edash.render.renderer import Renderer
 from edash.render.screen import build_screens
-from edash.state import DashboardState
+from edash.state import Away, DashboardState
 
 log = logging.getLogger(__name__)
 
@@ -187,6 +188,12 @@ class DeviceApp:
                     self._send(Ack(ref=msg.seq))
             case MailMsg() | CalendarMsg() | TeamsMsg() | WeatherMsg():
                 if self.state.apply(msg, now):
+                    self._dirty = True
+            case Presence():
+                away = Away(msg.reason, msg.since) if msg.away else None
+                if away != self.state.away:
+                    log.info("user %s", f"away ({msg.reason})" if away else "back")
+                    self.state.away = away
                     self._dirty = True
             case Command(action="screen"):
                 if msg.arg in (None, "auto"):

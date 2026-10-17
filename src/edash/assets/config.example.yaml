@@ -38,7 +38,9 @@ display:
 
 # Widgets are placed on the grid: pos = [col, row], size = [cols, rows].
 # Use box: [x, y, w, h] for pixel placement instead.
-# Optional per widget: title: "Text", frame: true, options: {...}
+# Optional per widget: title: "Text", frame: true, show_stale: false, options: {...}
+# (show_stale: the "as of 09:12" marker when mail/calendar/Teams/weather data is outdated)
+# Screen ids starting with "_" are reserved (built-in "_away" screen).
 screens:
   - id: main
     widgets:
@@ -74,6 +76,9 @@ screens:
 rotation:
   default: main
   min_dwell: 2m
+  # While the laptop is locked, asleep or shut down, the display shows a built-in
+  # away screen. To use your own, name a screen here (an `away` widget shows the reason).
+  # away_screen: my_away
   rules:
     - { when: "meeting_starts_in <= 5m", screen: meeting }
     - { when: "weekday in sat,sun", screen: idle }

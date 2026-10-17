@@ -8,10 +8,12 @@ from edash.state import DashboardState
 
 
 class ScreenSelector:
-    """Picks the screen from the rotation rules, with a minimum dwell time and a manual override."""
+    """Picks the screen: away screen while the user is away, else manual override, else rules
+    (with a minimum dwell time), else the default."""
 
     def __init__(self, rotation: RotationConfig):
         self._default = rotation.default
+        self._away = rotation.away_screen_id
         self._rules = [(parse_condition(r.when), r.screen) for r in rotation.rules]
         self._min_dwell = rotation.min_dwell
         self.current: str | None = None
@@ -25,6 +27,8 @@ class ScreenSelector:
         return self._default
 
     def select(self, state: DashboardState, now: datetime) -> str:
+        if state.away is not None:
+            return self._away
         if self.override:
             return self.override
         target = self.wanted(state, now)

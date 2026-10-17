@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from edash.host.platform.base import Platform
+from edash.host.platform.base import EventCallback, EventWatcher, Platform
 
 RUN_KEY = r"Software\Microsoft\Windows\CurrentVersion\Run"
 RUN_VALUE = "eDash Host"
@@ -19,6 +19,11 @@ class WindowsPlatform(Platform):
         # COM3 before COM12; the app port is enumerated first in practice.
         digits = "".join(c for c in port.device if c.isdigit())
         return (int(digits) if digits else 0,)
+
+    def start_event_watcher(self, callback: EventCallback) -> EventWatcher | None:
+        from edash.host.platform.windows_events import WindowsEventWatcher
+
+        return WindowsEventWatcher(callback).start()
 
     def install_autostart(self, config_path: Path) -> list[str]:
         # HKCU\...\Run needs no admin rights (unlike a logon task in Task Scheduler).

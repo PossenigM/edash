@@ -40,11 +40,19 @@ from edash.timeutil import start_of_day
 log = logging.getLogger(__name__)
 
 
+MIN_FRESH_FOR = timedelta(minutes=10)
+
+
 class Source(ABC):
     topic: ClassVar[str]
 
     def __init__(self, interval: timedelta):
         self.interval = interval
+
+    @property
+    def fresh_for(self) -> timedelta:
+        """How long fetched data counts as current: a few missed polls, but at least 10 minutes."""
+        return max(3 * self.interval, MIN_FRESH_FOR)
 
     @abstractmethod
     def fetch(self, now: datetime) -> DataMessage: ...

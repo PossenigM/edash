@@ -18,6 +18,7 @@ host = [
     "msal>=1.28",
     "msal-extensions>=1.2",
     "requests>=2.31",
+    "jeepney>=0.8; sys_platform == 'linux'",  # logind sleep/lock events
 ]
 tray = ["pystray>=0.19"]
 # Pi side. spidev/gpiozero/lgpio come from apt (python3-*) on Raspberry Pi OS;

@@ -82,3 +82,27 @@ def test_rule_switches_to_meeting_screen(app, example_config, now):
     app.clock._now = now + timedelta(minutes=3)  # past min_dwell since the first selection
     app.step(max_wait=0)
     assert app._refresh.screen == "meeting"
+
+
+def test_presence_switches_to_away_screen_and_back(app, example_config, now):
+    from edash.protocol import Presence
+
+    deliver(app, ConfigMsg(config=example_config.device_payload()))
+    app.step(max_wait=0)
+    deliver(app, Presence(away=True, reason="sleep", since=now))
+    app.step(max_wait=0)
+    assert app._refresh.screen == "_away" and app.display.frames[-1] == "full"
+    assert app._next_wake is None  # the away screen has nothing that changes by itself
+
+    deliver(app, Presence(away=False))
+    app.step(max_wait=0)
+    assert app._refresh.screen == "main"
+
+
+def test_away_wins_over_manual_override(app, example_config, now):
+    from edash.protocol import Presence
+
+    deliver(app, ConfigMsg(config=example_config.device_payload()), Command(action="screen", arg="idle"))
+    deliver(app, Presence(away=True, reason="locked", since=now))
+    app.step(max_wait=0)
+    assert app._refresh.screen == "_away"

@@ -5,6 +5,7 @@ import json
 import logging
 import logging.handlers
 import shutil
+import signal
 import socket
 import sys
 from datetime import datetime
@@ -97,6 +98,8 @@ def cmd_run(args: argparse.Namespace) -> None:
     logging.getLogger().addHandler(handler)
 
     app = HostApp(path, platform)
+    # systemd stops the service with SIGTERM; exit through run()'s cleanup so the away screen goes up.
+    signal.signal(signal.SIGTERM, lambda *_: app.stop())
     if args.tray:
         from edash.host.tray import run_with_tray
 

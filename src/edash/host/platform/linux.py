@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from edash.host.platform.base import Platform
+from edash.host.platform.base import EventCallback, EventWatcher, Platform
 from edash.usb import USB_MANUFACTURER, USB_PID, USB_VID
 
 log = logging.getLogger(__name__)
@@ -81,6 +81,11 @@ class LinuxPlatform(Platform):
             path.touch(mode=0o600, exist_ok=True)
             os.chmod(path, 0o600)
             return FilePersistence(str(path))
+
+    def start_event_watcher(self, callback: EventCallback) -> EventWatcher | None:
+        from edash.host.platform.logind import LogindWatcher
+
+        return LogindWatcher(callback).start()
 
     def install_autostart(self, config_path: Path) -> list[str]:
         unit_dir = Path.home() / ".config" / "systemd" / "user"

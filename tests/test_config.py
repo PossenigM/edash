@@ -85,3 +85,19 @@ def test_multiple_errors_are_collected(raw):
     data["screens"][0]["widgets"][0]["type"] = "nope"
     data["screens"][1]["widgets"][0]["pos"] = [11, 0]
     assert len(errors_for(data)) == 2
+
+
+def test_screen_ids_with_underscore_are_reserved(raw):
+    raw["screens"][2]["id"] = "_idle"
+    assert "reserved: _idle" in errors_for(raw)[0]
+
+
+def test_custom_away_screen_replaces_builtin(raw):
+    from edash.render.screen import build_screens
+
+    raw["rotation"]["away_screen"] = "idle"
+    screens, _ = build_screens(parse_config(raw))
+    assert "_away" not in screens
+
+    raw["rotation"]["away_screen"] = "nope"
+    assert "unknown screens: nope" in errors_for(raw)[0]

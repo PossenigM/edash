@@ -12,12 +12,13 @@ from edash.render.fonts import Fonts
 from edash.render.icons import draw_icon
 from edash.render.layout import Box
 from edash.render.screen import PlacedWidget, Screen
-from edash.render.text import draw_line, line_height
+from edash.render.text import draw_line, line_height, text_width
 from edash.state import DashboardState
 
 log = logging.getLogger(__name__)
 
 TITLE_SIZE = 18
+STALE_SIZE = 12
 FRAME_WIDTH = 2
 FRAME_PADDING = 6
 
@@ -60,6 +61,8 @@ class Renderer:
                 t = now + timedelta(minutes=1)
             if t is not None:
                 times.append(t)
+            if placed.config.show_stale:  # redraw when data turns stale, to add the marker
+                times.extend(u for topic in placed.widget.topics if (u := state.fresh_until.get(topic)) and u > now)
         return min(times, default=None)
 
     def _render_widget(
@@ -72,9 +75,11 @@ class Renderer:
         if placed.config.frame:
             draw.rectangle(content.rect, outline=BLACK, width=FRAME_WIDTH)
             content = content.inset(FRAME_WIDTH + FRAME_PADDING)
+        title_box = None
         if placed.config.title:
             font = self.fonts.get("bold", TITLE_SIZE)
             draw_line(draw, content.x, content.y, placed.config.title, font, content.w)
+            title_box = Box(content.x, content.y, content.w, line_height(font))
             rule_y = content.y + line_height(font) + 1
             draw.line((content.x, rule_y, content.right - 1, rule_y), fill=BLACK, width=2)
             _, content = content.split_top(rule_y - content.y + 6)
@@ -90,7 +95,26 @@ class Renderer:
             errors.append(f"{placed.label}: {err}")
             canvas = self._error_tile(content.w, content.h, f"{placed.config.type}: {err}")
         tile.paste(canvas, content.xy)
+
+        if placed.config.show_stale:
+            stale = [t for t in placed.widget.topics if state.is_stale(t, now) and t in state.fetched]
+            if stale:
+                as_of = min(state.fetched[t] for t in stale)
+                self._draw_stale_marker(draw, title_box or content, as_of, now, in_title=title_box is not None)
         return tile
+
+    def _draw_stale_marker(self, draw: ImageDraw.ImageDraw, area: Box, as_of: datetime, now: datetime, in_title: bool) -> None:
+        """Inverted "as of 09:12" label: right end of the title bar, or the top-right corner
+        (where list widgets have their header and the weather widget has free space)."""
+        local = as_of.astimezone(now.tzinfo)
+        text = f"as of {local:%H:%M}" if local.date() == now.date() else f"as of {local:%a %H:%M}"
+        font = self.fonts.get("bold", STALE_SIZE)
+        w = text_width(font, text) + 8
+        h = line_height(font) + 2
+        x = area.right - w
+        y = area.y + (area.h - h) // 2 if in_title else area.y
+        draw.rounded_rectangle((x, y, x + w - 1, y + h - 1), radius=3, fill=BLACK)
+        draw.text((x + 4, y + 1), text, font=font, fill=WHITE)
 
     def _error_tile(self, w: int, h: int, message: str) -> Image.Image:
         canvas = Image.new("1", (w, h), WHITE)

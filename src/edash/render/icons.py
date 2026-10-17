@@ -160,6 +160,22 @@ def calendar(draw: ImageDraw.ImageDraw, pen: _Pen) -> None:
         draw.line((*pen.p(fx, 0.08), *pen.p(fx, 0.28)), fill=pen.fill, width=pen.lw * 2)
 
 
+def lock(draw: ImageDraw.ImageDraw, pen: _Pen) -> None:
+    lw = pen.lw * 2
+    draw.arc(pen.rect(0.28, 0.06, 0.72, 0.58), 180, 360, fill=pen.fill, width=lw)
+    for fx in (0.28, 0.72):
+        draw.line((*pen.p(fx, 0.31), *pen.p(fx, 0.46)), fill=pen.fill, width=lw)
+    draw.rounded_rectangle(pen.rect(0.16, 0.44, 0.84, 0.94), radius=pen.s * 0.06, fill=pen.fill)
+    draw.ellipse(pen.rect(0.43, 0.56, 0.57, 0.70), fill=pen.bg)
+    draw.line((*pen.p(0.5, 0.66), *pen.p(0.5, 0.82)), fill=pen.bg, width=lw)
+
+
+def power(draw: ImageDraw.ImageDraw, pen: _Pen) -> None:
+    lw = pen.lw * 2
+    draw.arc(pen.rect(0.14, 0.18, 0.86, 0.90), 300, 240, fill=pen.fill, width=lw)
+    draw.line((*pen.p(0.5, 0.08), *pen.p(0.5, 0.52)), fill=pen.fill, width=lw)
+
+
 def warning(draw: ImageDraw.ImageDraw, pen: _Pen) -> None:
     draw.polygon([pen.p(0.5, 0.06), pen.p(0.96, 0.92), pen.p(0.04, 0.92)], outline=pen.fill, width=pen.lw)
     draw.line((*pen.p(0.5, 0.36), *pen.p(0.5, 0.66)), fill=pen.fill, width=pen.lw * 2)
@@ -183,6 +199,8 @@ ICONS: dict[str, IconFn] = {
     "mail": mail,
     "chat": chat,
     "calendar": calendar,
+    "lock": lock,
+    "power": power,
     "warning": warning,
 }
 

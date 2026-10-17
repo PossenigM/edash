@@ -17,6 +17,7 @@ from edash.config import Config, load_config
 from edash.errors import ConfigError
 from edash.host.graph import NotLoggedIn
 from edash.host.platform import Platform
+from edash.host.presence import PresenceTracker, SystemEvent
 from edash.host.sources import Source, build_sources
 from edash.link import Connected, Connection, Disconnected, Invalid, LineLink, LinkEvent, ProtocolError, Received, Stream
 from edash.protocol import Ack, Command, ConfigMsg, DataMessage, Error, Hello, Status, TimeSync
@@ -76,6 +77,7 @@ class HostApp:
         self._latest: dict[str, DataMessage] = {}
         self._stop = threading.Event()
         self._reload_requested = threading.Event()
+        self._presence = PresenceTracker()
         self._timers = _Timers()
         self._session = self._make_session()
         self._scheduled = self._schedule_sources()
@@ -87,12 +89,20 @@ class HostApp:
         server = _ControlServer(("127.0.0.1", self.config.host.control_port), self)
         threading.Thread(target=server.serve_forever, name="control", daemon=True).start()
         self.connection.start()
+        watcher = None
+        try:
+            watcher = self.platform.start_event_watcher(self.on_system_event)
+        except Exception:
+            log.exception("lock/sleep events unavailable")
         log.info("eDash host running (config: %s)", self.config_path)
         try:
             while not self._stop.is_set():
                 self._tick()
                 self._stop.wait(1.0)
         finally:
+            self.on_system_event("stopped")  # leave the away screen on the panel, not stale data
+            if watcher:
+                watcher.stop()
             server.shutdown()
             self.connection.stop()
 
@@ -101,6 +111,13 @@ class HostApp:
 
     def screen_ids(self) -> list[str]:
         return [s.id for s in self.config.screens]
+
+    def on_system_event(self, event: SystemEvent) -> None:
+        """Lock/sleep/shutdown events from the platform watcher (any thread)."""
+        log.info("system event: %s", event)
+        message = self._presence.handle(event, datetime.now().astimezone())
+        if message is not None:
+            self.connection.send(message)
 
     # --- main loop --------------------------------------------------------
 
@@ -122,8 +139,9 @@ class HostApp:
 
     def _run_source(self, item: _Scheduled) -> None:
         source = item.source
+        now = datetime.now().astimezone()
         try:
-            message = source.fetch(datetime.now().astimezone())
+            message = source.fetch(now)
         except NotLoggedIn as err:
             self._set_status(item, f"not logged in: {err}", logging.WARNING)
             item.next_run = time.monotonic() + ERROR_RETRY_S
@@ -132,6 +150,7 @@ class HostApp:
             self._set_status(item, f"error: {err}", logging.WARNING)
             item.next_run = time.monotonic() + min(ERROR_RETRY_S, source.interval.total_seconds())
             return
+        message = message.model_copy(update={"fetched_at": now, "fresh_until": now + source.fresh_for})
         self._latest[source.topic] = message
         self.connection.send(message)
         self._set_status(item, "ok", logging.INFO)
@@ -195,6 +214,7 @@ class HostApp:
     def _send_snapshot(self) -> None:
         self.connection.send(TimeSync(now=datetime.now().astimezone()))
         self.connection.send(ConfigMsg(config=self.config.device_payload()))
+        self.connection.send(self._presence.message())
         for message in list(self._latest.values()):
             self.connection.send(message)
 
@@ -240,6 +260,7 @@ class HostApp:
                 "ok": True,
                 "config": str(self.config_path),
                 "device_connected": self.status.device_connected,
+                "presence": self._presence.message().model_dump(mode="json", exclude={"seq", "type"}),
                 "device": self.status.last_device_status,
                 "sources": {item.source.topic: item.status for item in self._scheduled},
                 "config_errors": self.status.config_error,

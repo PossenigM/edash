@@ -19,6 +19,9 @@ from edash.timeutil import Duration
 
 EXAMPLE_CONFIG = Path(__file__).parent / "assets" / "config.example.yaml"
 
+# Built-in screen shown while the user is away, unless rotation.away_screen names another.
+BUILTIN_AWAY_SCREEN = "_away"
+
 
 class _Model(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -58,6 +61,7 @@ class WidgetConfig(_Model):
     box: tuple[int, int, int, int] | None = None  # pixels (x, y, w, h), instead of pos/size
     title: str | None = None
     frame: bool = False
+    show_stale: bool = True  # "as of 09:12" marker when the widget's data is outdated
     options: dict[str, Any] = Field(default_factory=dict)
 
     @model_validator(mode="after")
@@ -93,6 +97,12 @@ class RotationConfig(_Model):
     rules: list[RuleConfig] = Field(default_factory=list)
     # Minimum time on a screen before a rule may switch away (avoids flapping full refreshes).
     min_dwell: Duration = timedelta(minutes=2)
+    # Shown while the laptop is locked, asleep or shut down. Default: a built-in away screen.
+    away_screen: str | None = None
+
+    @property
+    def away_screen_id(self) -> str:
+        return self.away_screen or BUILTIN_AWAY_SCREEN
 
 
 class DeviceConfig(_Model):
@@ -106,9 +116,14 @@ class DeviceConfig(_Model):
         dupes = sorted({i for i in ids if ids.count(i) > 1})
         if dupes:
             raise ValueError(f"duplicate screen ids: {', '.join(dupes)}")
+        reserved = [i for i in ids if i.startswith("_")]
+        if reserved:
+            raise ValueError(f"screen ids starting with '_' are reserved: {', '.join(reserved)}")
         if self.rotation is None:
             self.rotation = RotationConfig(default=ids[0])
         refs = [self.rotation.default, *(r.screen for r in self.rotation.rules)]
+        if self.rotation.away_screen:
+            refs.append(self.rotation.away_screen)
         unknown = sorted({r for r in refs if r not in ids})
         if unknown:
             raise ValueError(f"rotation refers to unknown screens: {', '.join(unknown)}")
