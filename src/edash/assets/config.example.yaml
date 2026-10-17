@@ -1,0 +1,80 @@
+# eDash configuration.
+#
+# Lives on the laptop. edash-host watches this file and pushes the display,
+# screens and rotation sections to the Pi whenever you save it.
+# Try layouts without hardware:  edash-host preview --config this-file.yaml
+#
+# Durations: 30s, 45m, 1h30m, 2d    Time windows: "08:00-17:00"    Days: mon-fri, sat,sun
+
+host:
+  port: auto                 # or COM5 (Windows) / /dev/edash (Linux)
+  time_sync_every: 5m
+  # proxy: http://proxy.example.com:8080
+
+sources:
+  graph:
+    client_id: null          # Entra ID app registration, see README "Microsoft Graph"
+    tenant: organizations
+    poll: 60s
+  mail:
+    folder: inbox
+    max_items: 8
+  calendar:
+    lookahead: 2d
+  teams:
+    max_items: 8
+  weather:
+    name: Munich
+    latitude: 48.137
+    longitude: 11.575
+    days: 4                  # including today
+    poll: 15m
+
+display:
+  rotation: 0                # 90/180/270 if the panel is mounted turned
+  full_refresh_every: 30m    # a full (flashing) refresh clears ghosting
+  max_partial_refreshes: 60
+  grid: { cols: 12, rows: 8, gap: 8, margin: 12 }
+
+# Widgets are placed on the grid: pos = [col, row], size = [cols, rows].
+# Use box: [x, y, w, h] for pixel placement instead.
+# Optional per widget: title: "Text", frame: true, options: {...}
+screens:
+  - id: main
+    widgets:
+      - { type: clock,    pos: [0, 0], size: [4, 2] }
+      - { type: weather,  pos: [4, 0], size: [5, 2], options: { days: 3 } }
+      - type: reminder
+        pos: [9, 0]
+        size: [3, 1]
+        options: { label: Drink water, every: 45m, active: "08:00-18:00", icon: drop }
+      - type: reminder
+        pos: [9, 1]
+        size: [3, 1]
+        options: { label: Stand up, every: 1h, active: "08:00-18:00", icon: stand, highlight_for: 5m }
+      - { type: calendar, pos: [0, 2], size: [5, 6], title: Today, frame: true }
+      - { type: mail,     pos: [5, 2], size: [7, 3] }
+      - { type: teams,    pos: [5, 5], size: [7, 3] }
+
+  - id: meeting
+    widgets:
+      - { type: next_meeting, pos: [0, 0], size: [12, 6] }
+      - { type: clock,        pos: [0, 6], size: [6, 2], options: { date_format: null } }
+      - { type: calendar,     pos: [6, 6], size: [6, 2], options: { max_items: 2, show_location: false } }
+
+  - id: idle
+    widgets:
+      - { type: clock,   pos: [0, 0], size: [12, 5], options: { date_ratio: 0.22 } }
+      - { type: weather, pos: [1, 5], size: [10, 2], options: { days: 4 } }
+      - { type: status,  pos: [0, 7], size: [12, 1] }
+
+# Which screen to show. The first matching rule wins, otherwise `default`.
+# Variables: meeting_active, meeting_starts_in, unread_mail, unread_teams,
+# host_connected, time in HH:MM-HH:MM, weekday in ...; combine with `and`, negate with `not`.
+rotation:
+  default: main
+  min_dwell: 2m
+  rules:
+    - { when: "meeting_starts_in <= 5m", screen: meeting }
+    - { when: "weekday in sat,sun", screen: idle }
+    - { when: "time in 18:30-07:00", screen: idle }

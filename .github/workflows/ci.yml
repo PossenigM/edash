@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    name: tests (${{ matrix.os }}, Python ${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Windows = today's laptop, Ubuntu = future Linux laptop and the Pi's OS family.
+        os: [ubuntu-latest, windows-latest]
+        # 3.11 = oldest supported, 3.13 = Raspberry Pi OS (Trixie).
+        python: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+      - name: Install
+        run: python -m pip install -e ".[host,dev]"
+      - name: Test
+        run: python -m pytest -q
+      - name: Validate example config
+        run: edash-host check --config src/edash/assets/config.example.yaml
+      - name: Render previews and self-test frame
+        run: |
+          edash-host preview --config src/edash/assets/config.example.yaml --out previews --at 2026-10-19T10:20
+          edash-device --selftest --display file --out previews/selftest.png --partial-steps 2 --pause 0
+      - name: Upload previews
+        if: matrix.os == 'ubuntu-latest' && matrix.python == '3.13'
+        uses: actions/upload-artifact@v4
+        with:
+          name: previews
+          path: previews/*.png
+
+  pi-scripts:
+    name: Pi shell scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax
+        run: for f in pi/*.sh; do bash -n "$f"; done
+      - name: ShellCheck
+        run: shellcheck --severity=warning pi/*.sh

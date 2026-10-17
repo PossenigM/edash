@@ -1,0 +1,20 @@
+[Unit]
+Description=eDash e-ink display
+Requires=edash-gadget.service
+After=edash-gadget.service
+
+[Service]
+User=edash
+Group=edash
+SupplementaryGroups=spi gpio dialout
+# Lets the service set the system clock from the laptop's time (no RTC, no network).
+AmbientCapabilities=CAP_SYS_TIME
+CapabilityBoundingSet=CAP_SYS_TIME
+ExecStart=/opt/edash/venv/bin/edash-device --port /run/edash-tty
+Restart=always
+RestartSec=5
+# Give a running panel refresh time to finish.
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,13 @@
+[Unit]
+Description=eDash USB gadget (serial ports to the laptop)
+After=systemd-modules-load.service sys-kernel-config.mount
+Before=edash-device.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/opt/edash/bin/usb-gadget.sh up
+ExecStop=/opt/edash/bin/usb-gadget.sh down
+
+[Install]
+WantedBy=multi-user.target
