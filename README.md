@@ -53,6 +53,15 @@ Linux). `edash-host check` validates it. Errors name the exact place, e.g.
 - **Per widget**: `title`, `frame: true`, and widget-specific `options` (unknown keys are errors).
 - **Rotation**: the first matching rule wins, otherwise `default`. Example: `meeting_starts_in <= 5m`, `time in 18:30-07:00 and not meeting_active`.
 
+### Language
+
+`display.language: de` (or `en`) switches day and month names and all
+display texts ("7 ungelesen", "Heute", "bis 10:00", "Stand 16:25", …). Names
+are built in, so the Pi's system locale doesn't matter. `%A`, `%a`, `%B` and
+`%b` in your own `date_format` follow the setting too. To add a language,
+copy the `EN` block in `src/edash/render/i18n.py`. A test checks that every
+language has the same keys.
+
 ### Away screen
 
 When you lock the laptop, it goes to sleep, shuts down or the host stops, the
@@ -137,6 +146,11 @@ back to a file readable only by you, and the host logs a warning.
 
 `edash-host ctl screen meeting|auto`, `ctl refresh`, `ctl fetch`, `ctl status`
 control a running host. The tray menu offers the same commands.
+
+Only one host runs at a time: a second `edash-host run` exits with a message,
+because the control port (127.0.0.1:47811, `host.control_port`) is taken. If
+Graph throttles requests (HTTP 429/503), the source waits as long as Graph's
+`Retry-After` header says before polling again. `ctl status` shows this.
 
 ## Pi setup
 

@@ -14,7 +14,9 @@ from edash.timeutil import next_minute
 
 class ClockOptions(WidgetOptions):
     time_format: str = "%H:%M"
-    date_format: str | None = "%A, %d %B"
+    # strftime format; %A/%a/%B/%b follow display.language. Default: the language's long date.
+    # Set to null to hide the date.
+    date_format: str | None = "default"
     date_ratio: float = Field(0.28, ge=0.1, le=0.6)  # share of the height used by the date line
 
 
@@ -35,7 +37,8 @@ class Clock(Widget):
         draw_centered(ctx.draw, time_box, text, font, measure=sample)
 
         if o.date_format:
-            date = ctx.now.strftime(o.date_format)
+            fmt = ctx.locale.t("date_long") if o.date_format == "default" else o.date_format
+            date = ctx.locale.strftime(ctx.now, fmt)
             date_font = fit_font(ctx.fonts, "regular", date, date_box.w - 4, date_box.h - 2, max_size=40)
             draw_centered(ctx.draw, date_box, date, date_font, measure="Ag")
 

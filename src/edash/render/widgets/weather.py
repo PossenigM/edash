@@ -24,7 +24,7 @@ class Weather(Widget):
         o: WeatherOptions = self.options
         data = ctx.state.weather
         if data is None:
-            draw_placeholder(ctx, "Waiting for weather…")
+            draw_placeholder(ctx, ctx.locale.t("waiting_weather"))
             return
 
         box, draw = ctx.box, ctx.draw
@@ -65,7 +65,7 @@ class Weather(Widget):
         for i, day in enumerate(future):
             x0 = round(i * col_w)
             col = Box(x0, forecast_box.y + 4, round((i + 1) * col_w) - x0, forecast_box.h - 4)
-            label = day.date.strftime("%a")
+            label = ctx.locale.strftime(day.date, "%a")
             temps = f"{round(day.temp_max)}°/{round(day.temp_min)}°"
             if col.w >= col.h * 2.2:
                 # Wide, short columns: icon left, day and temperatures stacked right.

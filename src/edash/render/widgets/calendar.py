@@ -20,7 +20,7 @@ class CalendarOptions(WidgetOptions):
     font_size: int = Field(16, ge=8, le=40)
     show_location: bool = True
     show_past: bool = False
-    empty_text: str = "No more meetings today"
+    empty_text: str | None = None  # default: "No more meetings today" in the display language
 
 
 @widget("calendar")
@@ -40,18 +40,20 @@ class Calendar(Widget):
 
     def render(self, ctx: RenderContext) -> None:
         o: CalendarOptions = self.options
+        loc = ctx.locale
         if ctx.state.calendar is None:
-            draw_placeholder(ctx, "Waiting for calendar…")
+            draw_placeholder(ctx, loc.t("waiting_calendar"))
             return
         events = self._events(ctx.state, ctx.now)
         if not events:
-            draw_placeholder(ctx, o.empty_text, size=o.font_size)
+            empty = o.empty_text or loc.t("no_more_meetings" if o.days == 1 else "no_meetings")
+            draw_placeholder(ctx, empty, size=o.font_size)
             return
 
         draw, box, now, tz = ctx.draw, ctx.box, ctx.now, ctx.now.tzinfo
         bold = ctx.fonts.get("bold", o.font_size)
         small = ctx.fonts.get("regular", max(8, o.font_size - 3))
-        time_w = text_width(bold, "00:00") + 10
+        time_w = max(text_width(bold, "00:00"), text_width(small, loc.t("all_day"))) + 10
         text_w = box.w - time_w
         today = now.date()
 
@@ -60,20 +62,25 @@ class Calendar(Widget):
             start, end = ev.start.astimezone(tz), ev.end.astimezone(tz)
             day = max(start.date(), today)
             if o.days > 1 and day != current_day:
-                label = "Today" if day == today else "Tomorrow" if day == today + timedelta(days=1) else f"{day:%A %d.%m.}"
+                if day == today:
+                    label = loc.t("today")
+                elif day == today + timedelta(days=1):
+                    label = loc.t("tomorrow")
+                else:
+                    label = loc.strftime(day, loc.t("day_header"))
                 if y + line_height(small) + 4 > box.h:
                     break
                 draw_line(draw, 0, y, label.upper(), small, box.w)
                 y += line_height(small) + 4
                 current_day = day
 
-            details = [] if ev.all_day else [f"until {end:%H:%M}"]
+            details = [] if ev.all_day else [loc.t("until", t=f"{end:%H:%M}")]
             if o.show_location and ev.location:
                 details.append(ev.location)
             elif ev.online:
-                details.append("Online")
+                details.append(loc.t("online"))
             if ev.tentative:
-                details.append("tentative")
+                details.append(loc.t("tentative"))
             row_h = line_height(bold) + (line_height(small) if details else 0) + 6
             if y + row_h > box.h:
                 break
@@ -82,7 +89,7 @@ class Calendar(Widget):
             fg = WHITE if active else BLACK
             if active:
                 draw.rectangle((0, y - 2, box.w - 1, y + row_h - 4), fill=BLACK)
-            draw_line(draw, 2, y, "all day" if ev.all_day else f"{start:%H:%M}", bold if not ev.all_day else small, time_w - 4, fg)
+            draw_line(draw, 2, y, loc.t("all_day") if ev.all_day else f"{start:%H:%M}", small if ev.all_day else bold, time_w - 4, fg)
             draw_line(draw, time_w, y, ev.subject, bold, text_w - 2, fg)
             if details:
                 draw_line(draw, time_w, y + line_height(bold), " · ".join(details), small, text_w - 2, fg)
@@ -91,7 +98,7 @@ class Calendar(Widget):
 
         hidden = len(events) - shown
         if hidden > 0 and y + line_height(small) <= box.h:
-            draw_line(draw, time_w, y, f"+{hidden} more", small, text_w)
+            draw_line(draw, time_w, y, loc.t("more", n=hidden), small, text_w)
 
     def next_update(self, state: DashboardState, now: datetime) -> datetime | None:
         boundaries = [t for e in self._events(state, now) for t in (e.start, e.end) if t > now]

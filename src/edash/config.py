@@ -40,6 +40,7 @@ class GridConfig(_Model):
 class DisplayConfig(_Model):
     width: int = Field(800, gt=0)
     height: int = Field(480, gt=0)
+    language: Literal["en", "de"] = "en"  # day/month names and widget texts
     # Degrees the rendered image is turned clockwise before it goes to the panel.
     rotation: Literal[0, 90, 180, 270] = 0
     full_refresh_every: Duration = timedelta(minutes=30)

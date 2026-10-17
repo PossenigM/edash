@@ -15,7 +15,7 @@ from edash.timeutil import Duration, next_minute
 
 class NextMeetingOptions(WidgetOptions):
     lookahead: Duration = timedelta(hours=12)
-    empty_text: str = "No upcoming meetings"
+    empty_text: str | None = None  # default: "No upcoming meetings" in the display language
 
 
 @widget("next_meeting")
@@ -35,26 +35,27 @@ class NextMeeting(Widget):
         return None, False
 
     def render(self, ctx: RenderContext) -> None:
+        loc = ctx.locale
         if ctx.state.calendar is None:
-            draw_placeholder(ctx, "Waiting for calendar…")
+            draw_placeholder(ctx, loc.t("waiting_calendar"))
             return
         event, running = self._pick(ctx.state, ctx.now)
         if event is None:
-            draw_placeholder(ctx, self.options.empty_text, size=24)
+            draw_placeholder(ctx, self.options.empty_text or loc.t("no_upcoming"), size=24)
             return
 
         draw, box, now = ctx.draw, ctx.box, ctx.now
         start, end = event.start.astimezone(now.tzinfo), event.end.astimezone(now.tzinfo)
         if running:
-            label = f"NOW · until {end:%H:%M}"
+            label = loc.t("now_until", t=f"{end:%H:%M}")
         else:
             minutes = math.ceil((start - now).total_seconds() / 60)
             if minutes < 60:
-                label = f"IN {minutes} MIN"
+                label = loc.t("in_minutes", n=minutes)
             elif start.date() == now.date():
-                label = f"AT {start:%H:%M}"
+                label = loc.t("at", t=f"{start:%H:%M}")
             else:
-                label = f"{start:%a %H:%M}".upper()
+                label = loc.strftime(start, "%a %H:%M").upper()
 
         label_font = fit_font(ctx.fonts, "bold", label, box.w, round(box.h * 0.16), max_size=48)
         y = draw_line(draw, 0, 0, label, label_font, box.w) + 4
@@ -65,7 +66,7 @@ class NextMeeting(Widget):
         if event.location:
             details.append(event.location)
         elif event.online:
-            details.append("Online meeting")
+            details.append(loc.t("online_meeting"))
         detail_font = ctx.fonts.get("regular", max(12, min(28, round(box.h * 0.08))))
         detail_h = line_height(detail_font)
         subject_box = Box(0, y, box.w, box.h - y - detail_h - 6)

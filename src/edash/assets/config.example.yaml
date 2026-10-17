@@ -31,6 +31,7 @@ sources:
     poll: 15m
 
 display:
+  language: en               # en or de: day/month names and widget texts
   rotation: 0                # 90/180/270 if the panel is mounted turned
   full_refresh_every: 30m    # a full (flashing) refresh clears ghosting
   max_partial_refreshes: 60

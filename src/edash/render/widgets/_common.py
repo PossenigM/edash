@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from edash.render.context import BLACK, RenderContext
+from edash.render.i18n import Locale
 from edash.render.icons import draw_icon
 from edash.render.layout import Box
 from edash.render.text import draw_line, line_height, text_width, wrap
@@ -18,15 +19,15 @@ def draw_placeholder(ctx: RenderContext, text: str, box: Box | None = None, size
         y += draw_line(ctx.draw, box.x, y, line, font, box.w, align="center")
 
 
-def short_time(dt: datetime, now: datetime) -> str:
-    """``14:05`` today, ``yesterday``, otherwise ``12.10.``."""
+def short_time(dt: datetime, now: datetime, locale: Locale) -> str:
+    """``14:05`` today, ``yesterday``, otherwise a short date like ``12 Oct`` / ``12.10.``."""
     local = dt.astimezone(now.tzinfo)
     days_ago = (now.date() - local.date()).days
     if days_ago == 0:
         return f"{local:%H:%M}"
     if days_ago == 1:
-        return "yesterday"
-    return f"{local:%d.%m.}"
+        return locale.t("yesterday")
+    return locale.strftime(local, locale.t("date_short"))
 
 
 @dataclass
@@ -86,4 +87,4 @@ def draw_message_list(
 
     hidden = len(rows) - shown
     if hidden > 0 and y + more_h <= box.h:
-        draw_line(draw, 0, y, f"+{hidden} more", small, box.w)
+        draw_line(draw, 0, y, ctx.locale.t("more", n=hidden), small, box.w)

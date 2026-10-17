@@ -111,10 +111,8 @@ class Reminder(Widget):
         title = (o.due_text or f"{o.label}!") if status.due else o.label
         if status.due or status.next_due is None:
             sub = None
-        elif status.next_due.date() == ctx.now.date():
-            sub = f"next {status.next_due:%H:%M}"
         else:
-            sub = f"next {status.next_due:%a %H:%M}"
+            sub = ctx.locale.t("next_at", t=ctx.locale.when(status.next_due, ctx.now))
 
         sub_font = ctx.fonts.get("regular", max(10, min(16, round(inner.h * 0.3))))
         sub_h = line_height(sub_font) if sub else 0

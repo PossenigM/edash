@@ -86,7 +86,7 @@ def _require_config(path: Path) -> None:
 
 
 def cmd_run(args: argparse.Namespace) -> None:
-    from edash.host.app import HostApp
+    from edash.host.app import AlreadyRunning, HostApp
 
     platform = _platform()
     path = _config_path(args)
@@ -98,6 +98,10 @@ def cmd_run(args: argparse.Namespace) -> None:
     logging.getLogger().addHandler(handler)
 
     app = HostApp(path, platform)
+    try:
+        app.open_control_server()
+    except AlreadyRunning as err:
+        sys.exit(str(err))
     # systemd stops the service with SIGTERM; exit through run()'s cleanup so the away screen goes up.
     signal.signal(signal.SIGTERM, lambda *_: app.stop())
     if args.tray:

@@ -132,3 +132,39 @@ def test_weather(now):
     data = WeatherSource(WeatherSourceConfig(latitude=48.1, longitude=11.5, name="Home"), Session()).fetch(now).data
     assert (data.location, data.temperature, data.code) == ("Home", 12.4, 61)
     assert len(data.days) == 1  # the day with a missing value is skipped
+
+
+def test_graph_throttling_reports_retry_after():
+    import pytest
+
+    from edash.host.graph import GraphClient, GraphError
+
+    class Response:
+        def __init__(self, status, headers):
+            self.status_code, self.headers, self.text = status, headers, ""
+
+        def json(self):
+            return {"error": {"message": "Too many requests"}}
+
+    class Session:
+        def __init__(self, response):
+            self.response = response
+
+        def get(self, *args, **kwargs):
+            return self.response
+
+    class Auth:
+        def token(self):
+            return "t"
+
+    with pytest.raises(GraphError) as info:
+        GraphClient(Auth(), Session(Response(429, {"Retry-After": "30"}))).get("/me/messages")
+    assert info.value.retry_after == 30 and "Too many requests" in str(info.value)
+
+    with pytest.raises(GraphError) as info:
+        GraphClient(Auth(), Session(Response(503, {}))).get("/me")
+    assert info.value.retry_after == 60  # default when the header is missing
+
+    with pytest.raises(GraphError) as info:
+        GraphClient(Auth(), Session(Response(403, {}))).get("/me")
+    assert info.value.retry_after is None

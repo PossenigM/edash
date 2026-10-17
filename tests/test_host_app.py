@@ -72,3 +72,62 @@ def test_snapshot_includes_presence(app):
     kinds = [type(m) for m in app.sent]
     assert kinds[:3] == [TimeSync, ConfigMsg, Presence]
     assert app.sent[2].reason == "sleep"
+
+
+def test_second_instance_is_refused(tmp_path, app):
+    import socket
+
+    from edash.host.app import AlreadyRunning
+
+    with socket.socket() as probe:
+        probe.bind(("127.0.0.1", 0))
+        port = probe.getsockname()[1]
+    app.config.host.control_port = port
+    app.open_control_server()
+    try:
+        other_dir = tmp_path / "other"
+        other_dir.mkdir()
+        other = HostApp(app.config_path, FakePlatform(other_dir))
+        other.config.host.control_port = port
+        with pytest.raises(AlreadyRunning, match=f"port {port} is in use"):
+            other.open_control_server()
+    finally:
+        app._server.server_close()
+
+
+def test_connect_sends_hello_and_snapshot_follows_device_hello(app):
+    from edash.link import Connected, Received
+    from edash.protocol import Hello
+
+    app._on_event(Connected())
+    assert [type(m) for m in app.sent] == [Hello]
+    app.sent.clear()
+    app._on_event(Received(Hello(role="device")))
+    assert [type(m) for m in app.sent][:3] == [TimeSync, ConfigMsg, Presence]
+
+
+def test_protocol_mismatch_is_logged_once(app, caplog):
+    from edash.link import Received
+    from edash.protocol import Hello
+
+    for _ in range(2):
+        app._on_event(Received(Hello(role="device", protocol=99)))
+    assert sum("protocol 99" in r.message for r in caplog.records) == 1
+
+
+def test_throttled_source_waits_for_retry_after(app):
+    import time
+
+    from edash.host.graph import GraphError
+
+    class Throttled(Source):
+        topic = "mail"
+
+        def fetch(self, now):
+            raise GraphError("HTTP 429", retry_after=120)
+
+    item = _Scheduled(Throttled(timedelta(minutes=1)))
+    before = time.monotonic()
+    app._run_source(item)
+    assert item.status == "throttled, retrying in 120 s"
+    assert item.next_run - before == pytest.approx(120, abs=1)

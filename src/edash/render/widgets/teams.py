@@ -12,7 +12,7 @@ class TeamsOptions(WidgetOptions):
     font_size: int = Field(15, ge=8, le=40)
     show_header: bool = True
     unread_only: bool = False
-    empty_text: str = "No new messages"
+    empty_text: str | None = None  # default: "No new messages" in the display language
 
 
 @widget("teams")
@@ -22,16 +22,17 @@ class Teams(Widget):
 
     def render(self, ctx: RenderContext) -> None:
         o: TeamsOptions = self.options
+        loc = ctx.locale
         data = ctx.state.teams
         if data is None:
-            draw_placeholder(ctx, "Waiting for Teams…")
+            draw_placeholder(ctx, loc.t("waiting_teams"))
             return
         chats = [c for c in data.items if c.unread or not o.unread_only]
         rows = [
             Row(
                 c.chat,
                 c.preview if c.sender == c.chat else f"{c.sender}: {c.preview}",
-                short_time(c.at, ctx.now),
+                short_time(c.at, ctx.now, loc),
                 "• " if c.unread else "",
             )
             for c in chats
@@ -39,10 +40,10 @@ class Teams(Widget):
         draw_message_list(
             ctx,
             icon="chat",
-            header=f"{data.unread_count} unread chat{'s' if data.unread_count != 1 else ''}",
+            header=loc.plural("unread_chats", data.unread_count),
             rows=rows,
             max_items=o.max_items,
             font_size=o.font_size,
             show_header=o.show_header,
-            empty_text=o.empty_text,
+            empty_text=o.empty_text or loc.t("no_messages"),
         )

@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import socketserver
+import sys
 import threading
 import time
 from dataclasses import dataclass, field
@@ -13,6 +14,7 @@ from typing import Any
 import requests
 import serial
 
+from edash import PROTOCOL_VERSION
 from edash.config import Config, load_config
 from edash.errors import ConfigError
 from edash.host.graph import NotLoggedIn
@@ -26,6 +28,10 @@ log = logging.getLogger(__name__)
 
 PROBE_TIMEOUT_S = 3.0
 ERROR_RETRY_S = 120.0
+
+
+class AlreadyRunning(Exception):
+    pass
 
 
 def open_serial(port: str) -> serial.Serial:
@@ -78,6 +84,8 @@ class HostApp:
         self._stop = threading.Event()
         self._reload_requested = threading.Event()
         self._presence = PresenceTracker()
+        self._server: _ControlServer | None = None
+        self._protocol_warned = False
         self._timers = _Timers()
         self._session = self._make_session()
         self._scheduled = self._schedule_sources()
@@ -85,8 +93,19 @@ class HostApp:
 
     # --- lifecycle --------------------------------------------------------
 
+    def open_control_server(self) -> None:
+        """Bind the local control port. Doubles as the single-instance check."""
+        if self._server is not None:
+            return
+        port = self.config.host.control_port
+        try:
+            self._server = _ControlServer(("127.0.0.1", port), self)
+        except OSError as err:
+            raise AlreadyRunning(f"Control port {port} is in use. Is another edash-host already running? ({err})") from None
+
     def run(self) -> None:
-        server = _ControlServer(("127.0.0.1", self.config.host.control_port), self)
+        self.open_control_server()
+        server = self._server
         threading.Thread(target=server.serve_forever, name="control", daemon=True).start()
         self.connection.start()
         watcher = None
@@ -104,6 +123,8 @@ class HostApp:
             if watcher:
                 watcher.stop()
             server.shutdown()
+            server.server_close()
+            self._server = None
             self.connection.stop()
 
     def stop(self) -> None:
@@ -147,8 +168,13 @@ class HostApp:
             item.next_run = time.monotonic() + ERROR_RETRY_S
             return
         except Exception as err:
-            self._set_status(item, f"error: {err}", logging.WARNING)
-            item.next_run = time.monotonic() + min(ERROR_RETRY_S, source.interval.total_seconds())
+            retry_after = getattr(err, "retry_after", None)  # set by GraphError on HTTP 429/503
+            if retry_after:
+                self._set_status(item, f"throttled, retrying in {retry_after:.0f} s", logging.WARNING)
+                item.next_run = time.monotonic() + retry_after
+            else:
+                self._set_status(item, f"error: {err}", logging.WARNING)
+                item.next_run = time.monotonic() + min(ERROR_RETRY_S, source.interval.total_seconds())
             return
         message = message.model_copy(update={"fetched_at": now, "fresh_until": now + source.fresh_for})
         self._latest[source.topic] = message
@@ -221,15 +247,24 @@ class HostApp:
     def _on_event(self, event: LinkEvent) -> None:
         match event:
             case Connected():
+                # The snapshot follows the device's hello: it is sent once the
+                # device listens, also when the Pi boots after the port opened.
                 self.status.device_connected = True
-                self._send_snapshot()
+                self.connection.send(Hello(role="host"))
             case Disconnected(reason=reason):
                 self.status.device_connected = False
                 log.info("device disconnected: %s", reason)
             case Invalid(error=error):
                 log.warning("from device: %s", error)
             case Received(message=Hello(role="device") as hello):
-                log.info("device says hello (version %s)", hello.version)
+                log.info("device ready (version %s)", hello.version)
+                if hello.protocol != PROTOCOL_VERSION and not self._protocol_warned:
+                    log.error(
+                        "device speaks protocol %s, this host %s: update the Pi (pi/unlock.sh, install.sh)",
+                        hello.protocol,
+                        PROTOCOL_VERSION,
+                    )
+                    self._protocol_warned = True
                 self._send_snapshot()
             case Received(message=Error() as error):
                 log.error("device rejected message %s: %s", error.ref, error.message)
@@ -280,7 +315,9 @@ class _ControlHandler(socketserver.StreamRequestHandler):
 
 class _ControlServer(socketserver.ThreadingTCPServer):
     daemon_threads = True
-    allow_reuse_address = True
+    # On Windows SO_REUSEADDR lets a second process bind the same port, which
+    # would defeat the single-instance check; elsewhere it only skips TIME_WAIT.
+    allow_reuse_address = sys.platform != "win32"
 
     def __init__(self, address: tuple[str, int], app: HostApp):
         super().__init__(address, _ControlHandler)

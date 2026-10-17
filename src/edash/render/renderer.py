@@ -9,6 +9,7 @@ from PIL import Image, ImageDraw
 from edash.config import DisplayConfig
 from edash.render.context import BLACK, WHITE, RenderContext
 from edash.render.fonts import Fonts
+from edash.render.i18n import get_locale
 from edash.render.icons import draw_icon
 from edash.render.layout import Box
 from edash.render.screen import PlacedWidget, Screen
@@ -39,6 +40,7 @@ class Renderer:
     def __init__(self, display: DisplayConfig, fonts: Fonts | None = None):
         self.display = display
         self.fonts = fonts or Fonts()
+        self.locale = get_locale(display.language)
 
     def render(self, screen: Screen, state: DashboardState, now: datetime) -> RenderResult:
         image = Image.new("1", self.display.logical_size, WHITE)
@@ -87,7 +89,7 @@ class Renderer:
             return tile
 
         canvas = Image.new("1", (content.w, content.h), WHITE)
-        ctx = RenderContext(canvas, ImageDraw.Draw(canvas), self.fonts, state, now)
+        ctx = RenderContext(canvas, ImageDraw.Draw(canvas), self.fonts, state, now, self.locale)
         try:
             placed.widget.render(ctx)
         except Exception as err:
@@ -106,8 +108,7 @@ class Renderer:
     def _draw_stale_marker(self, draw: ImageDraw.ImageDraw, area: Box, as_of: datetime, now: datetime, in_title: bool) -> None:
         """Inverted "as of 09:12" label: right end of the title bar, or the top-right corner
         (where list widgets have their header and the weather widget has free space)."""
-        local = as_of.astimezone(now.tzinfo)
-        text = f"as of {local:%H:%M}" if local.date() == now.date() else f"as of {local:%a %H:%M}"
+        text = self.locale.t("as_of", t=self.locale.when(as_of, now))
         font = self.fonts.get("bold", STALE_SIZE)
         w = text_width(font, text) + 8
         h = line_height(font) + 2

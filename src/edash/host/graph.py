@@ -24,7 +24,19 @@ class NotLoggedIn(Exception):
 
 
 class GraphError(Exception):
-    pass
+    def __init__(self, message: str, retry_after: float | None = None):
+        super().__init__(message)
+        self.retry_after = retry_after  # seconds, when Graph asks us to back off
+
+
+DEFAULT_RETRY_AFTER_S = 60.0
+
+
+def _retry_after(header: str | None) -> float:
+    try:
+        return max(1.0, float(header)) if header else DEFAULT_RETRY_AFTER_S
+    except ValueError:  # an HTTP date; rare for Graph
+        return DEFAULT_RETRY_AFTER_S
 
 
 class GraphAuth:
@@ -84,7 +96,10 @@ class GraphClient:
                 message = response.json()["error"]["message"]
             except (ValueError, KeyError, TypeError):
                 message = response.text[:200]
-            raise GraphError(f"HTTP {response.status_code} for {path.split('?')[0]}: {message}")
+            retry = None
+            if response.status_code in (429, 503, 504):
+                retry = _retry_after(response.headers.get("Retry-After"))
+            raise GraphError(f"HTTP {response.status_code} for {path.split('?')[0]}: {message}", retry_after=retry)
         return response.json()
 
     def get_all(
