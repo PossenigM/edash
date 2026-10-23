@@ -166,8 +166,31 @@ Graph throttles requests (HTTP 429/503), the source waits as long as Graph's
    - installs the systemd units.
 3. Reboot and run the **panel self-test** (see below) before connecting anything else.
 4. Plug the Pi's **USB** port (not PWR) into the laptop. Check with `journalctl -u edash-device -f`.
-5. Once everything works, run `sudo ./pi/lockdown.sh`. It disables Wi-Fi/Bluetooth and network services, keeps logs in RAM, and makes the root filesystem read-only (overlayfs), so pulling the cable can't corrupt the SD card.
+5. Once everything works, run `sudo ./pi/lockdown.sh`. It switches Wi-Fi off after every boot, disables Bluetooth and network services, keeps logs in RAM, and makes the root filesystem read-only (overlayfs), so pulling the cable can't corrupt the SD card.
 6. **Updates**: log in on the debug console (the second serial port, 115200 baud) and run `sudo ./pi/unlock.sh`, then reboot, update and run `lockdown.sh` again.
+
+### Debug console and Wi-Fi
+
+The debug console needs no network. On Linux, with the udev rule installed:
+```sh
+python -m serial.tools.miniterm /dev/edash-console 115200    # press Enter for the login prompt; Ctrl+] quits
+```
+On Windows, use the second COM port with PuTTY or `python -m serial.tools.miniterm COMx 115200`.
+
+After lockdown, Wi-Fi stays off unless you switch it on from the console:
+```sh
+sudo nmcli radio wifi on
+```
+The Pi then joins a Wi-Fi network saved before lockdown, e.g. your phone's hotspot. The next boot
+turns Wi-Fi off again. Lockdown also stops mDNS, so `edash.local` doesn't resolve; take the IP from
+the hotspot's list of connected devices or from `nmcli -g IP4.ADDRESS device show wlan0`.
+
+Save the hotspot **before** running `lockdown.sh`, because the read-only root forgets anything
+saved later. This works without the hotspot being in range:
+```sh
+sudo nmcli connection add type wifi ifname wlan0 con-name hotspot ssid "<SSID>" \
+    wifi-sec.key-mgmt wpa-psk wifi-sec.psk "<password>"
+```
 
 ### Panel self-test
 

@@ -1,0 +1,14 @@
+[Unit]
+Description=eDash: Wi-Fi off after boot (enabled by lockdown.sh)
+# Switch Wi-Fi on for debugging with `sudo nmcli radio wifi on`. The next boot
+# turns it off again. NetworkManager starts with Wi-Fi on, so the Pi may scan
+# for a moment at boot; it only ever joins networks saved before lockdown.
+Requires=NetworkManager.service
+After=NetworkManager.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/nmcli radio wifi off
+
+[Install]
+WantedBy=multi-user.target
