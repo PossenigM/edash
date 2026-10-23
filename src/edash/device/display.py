@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
+import tempfile
 from pathlib import Path
 from typing import Protocol
 
@@ -28,6 +29,10 @@ class WaveshareDisplay:
     """
 
     def __init__(self) -> None:
+        # lgpio creates its notify pipe in the working directory, which is / (not
+        # writable) under systemd; gpiozero then falls back to a pin factory that
+        # fails with EINVAL. LG_WD must be set before lgpio is loaded.
+        os.environ.setdefault("LG_WD", tempfile.gettempdir())
         from waveshare_epd import epd7in5_V2  # installed on the Pi by pi/install.sh
 
         self._epd = epd7in5_V2.EPD()

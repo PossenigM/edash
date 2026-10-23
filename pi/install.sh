@@ -22,7 +22,8 @@ apt-get install -y --no-install-recommends \
 
 echo "==> SPI and USB device mode"
 raspi-config nonint do_spi 0
-if ! grep -q '^dtoverlay=dwc2' "$BOOT/config.txt"; then
+# Match the exact line: stock config.txt has "dtoverlay=dwc2,dr_mode=host" under [cm5].
+if ! grep -q '^dtoverlay=dwc2,dr_mode=peripheral' "$BOOT/config.txt"; then
     printf '\n[all]\ndtoverlay=dwc2,dr_mode=peripheral\n' >> "$BOOT/config.txt"
 fi
 printf 'dwc2\nlibcomposite\n' > /etc/modules-load.d/edash.conf
