@@ -6,7 +6,7 @@ E-ink office dashboard based on a Raspberry Pi Zero 2 W and a Waveshare 7.5" e-p
 panel. The display is connected to a laptop by a single USB cable, which supplies
 power and carries the data. No network connection is required on the Pi.
 
-![Main screen](docs/images/screen-main.png)
+![eDash next to a laptop](docs/images/photo-dashboard.jpg)
 
 ## Features
 
@@ -48,6 +48,13 @@ keep running between data updates. Host and device share the rendering code, so
 | Enclosure | 3D-printable front panel, back plate and kickstand |
 
 Measured on the V2 panel: full refresh 4.1 s, partial refresh 0.7 s.
+
+| | | |
+|---|---|---|
+| ![Idle screen](docs/images/photo-idle.jpg) | ![Meeting screen](docs/images/photo-meeting.jpg) | ![Away screen](docs/images/photo-away.jpg) |
+| Idle screen | Meeting screen | Away screen |
+| ![Startup screen](docs/images/photo-startup.jpg) | ![Back with kickstand](docs/images/photo-back.jpg) | ![Rendered main screen](docs/images/screen-main.png) |
+| Startup screen | Back with kickstand | Rendered main screen (800×480) |
 
 ## Quick start
 
