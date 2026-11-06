@@ -2,7 +2,7 @@ from datetime import time, timedelta
 
 import pytest
 
-from edash.timeutil import TimeRange, parse_duration, parse_weekdays
+from edash.timeutil import TimeRange, format_duration, format_weekdays, parse_duration, parse_weekdays
 
 
 @pytest.mark.parametrize(
@@ -41,3 +41,14 @@ def test_weekdays():
     assert parse_weekdays(["fri-mon"]) == frozenset({4, 5, 6, 0})
     with pytest.raises(ValueError):
         parse_weekdays("monday")
+
+
+@pytest.mark.parametrize("text", ["30s", "45m", "1h30m", "2d", "1d2h"])
+def test_format_duration_round_trips(text):
+    assert format_duration(parse_duration(text)) == text
+
+
+def test_format_weekdays():
+    assert format_weekdays(frozenset(range(5))) == "mon-fri"
+    assert format_weekdays(frozenset({5, 6})) == "sat,sun"
+    assert format_weekdays(frozenset({0, 2, 3, 4, 6})) == "mon,wed-fri,sun"

@@ -34,6 +34,10 @@ def main(argv: list[str] | None = None) -> None:
     p.add_argument("--scale", type=int, default=1, help="integer upscaling for easier viewing")
     p.add_argument("--at", help="render as if it were this local time, e.g. 2026-10-19T09:40")
 
+    p = with_config(sub.add_parser("edit", help="open the layout editor in the browser"))
+    p.add_argument("--port", type=int, default=0, help="local port (default: any free port)")
+    p.add_argument("--no-browser", action="store_true", help="only print the URL")
+
     with_config(sub.add_parser("check", help="validate the config"))
     p = with_config(sub.add_parser("init-config", help="copy the example config to the config dir"))
     p.add_argument("--force", action="store_true")
@@ -124,6 +128,28 @@ def cmd_preview(args: argparse.Namespace) -> None:
         print(path)
 
 
+def cmd_edit(args: argparse.Namespace) -> None:
+    import webbrowser
+
+    from edash.host.editor.server import EditorServer
+
+    save_path = args.config or _platform().default_config_path()
+    load_path = save_path
+    if not save_path.exists():
+        print(f"No config at {save_path} yet, starting from the example. Saving creates it.")
+        load_path = EXAMPLE_CONFIG
+    server = EditorServer(load_path, save_path, args.port)
+    print(f"Editor running at {server.url}\nPress Ctrl+C to stop.", flush=True)
+    if not args.no_browser:
+        webbrowser.open(server.url)
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
+
+
 def cmd_check(args: argparse.Namespace) -> None:
     from edash.render.screen import build_screens
 
@@ -199,6 +225,7 @@ def cmd_uninstall_autostart(args: argparse.Namespace) -> None:
 COMMANDS = {
     "run": cmd_run,
     "preview": cmd_preview,
+    "edit": cmd_edit,
     "check": cmd_check,
     "init-config": cmd_init_config,
     "login": cmd_login,

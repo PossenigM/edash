@@ -12,6 +12,7 @@
 | `src/edash/device/` | Pi service: main loop, refresh policy, clock, panel driver, self-test |
 | `src/edash/host/` | Host service: data sources, Graph client, control port, tray, CLI |
 | `src/edash/host/platform/` | OS-specific code for Windows and Linux |
+| `src/edash/host/editor/` | Layout editor: local HTTP server and browser UI |
 | `pi/` | Pi installation, USB gadget, lockdown, systemd units |
 | `tests/` | pytest suite |
 

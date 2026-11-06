@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>eDash Editor</title>
+  <link rel="icon" href="/static/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/editor.css">
+</head>
+<body>
+  <header>
+    <div class="brand"><img src="/static/logo.svg" alt=""><span>eDash Editor</span></div>
+    <span id="path" class="muted"></span>
+    <span class="spacer"></span>
+    <span id="dirty" class="badge" hidden>Unsaved changes</span>
+    <button id="revert" type="button">Revert</button>
+    <button id="save" type="button" class="primary">Save</button>
+  </header>
+
+  <main>
+    <aside id="left">
+      <section>
+        <h2>Screens <button id="add-screen" type="button" class="small" title="Add screen">Add</button></h2>
+        <ul id="screens" class="list"></ul>
+      </section>
+      <section>
+        <h2>Display</h2>
+        <div id="display-form" class="form"></div>
+      </section>
+      <section>
+        <h2>Rotation</h2>
+        <div id="rotation-form" class="form"></div>
+        <h3>Rules <button id="add-rule" type="button" class="small">Add</button></h3>
+        <p class="hint">The first matching rule selects the screen.</p>
+        <div id="rules"></div>
+      </section>
+    </aside>
+
+    <section id="center">
+      <div class="toolbar">
+        <div class="tabs">
+          <button type="button" data-view="preview" class="active">Preview</button>
+          <button type="button" data-view="yaml">YAML</button>
+        </div>
+        <label>Time <input type="datetime-local" id="at"></label>
+        <button id="at-now" type="button" class="small">Now</button>
+        <label class="check"><input type="checkbox" id="show-grid" checked> Grid</label>
+        <span class="spacer"></span>
+        <span id="active-screen" class="muted"></span>
+        <button id="show-on-panel" type="button" class="small">Show on panel</button>
+        <button id="panel-auto" type="button" class="small">Auto</button>
+      </div>
+      <div id="preview-view">
+        <div id="stage">
+          <img id="frame" alt="Preview">
+          <div id="overlay"></div>
+        </div>
+      </div>
+      <div id="yaml-view" hidden>
+        <textarea id="yaml" spellcheck="false"></textarea>
+        <div class="row"><button id="yaml-apply" type="button">Apply</button></div>
+      </div>
+      <ul id="messages"></ul>
+    </section>
+
+    <aside id="right">
+      <div id="inspector"></div>
+    </aside>
+  </main>
+
+  <script src="/static/editor.js"></script>
+</body>
+</html>

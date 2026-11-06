@@ -48,6 +48,28 @@ by the user, and a warning is logged.
 validates it. The host watches the file and pushes changes to the Pi on save. See
 [Configuration](configuration.md).
 
+## Layout editor
+
+```sh
+edash-host edit
+```
+
+Starts a local web server on `127.0.0.1` and opens the editor in the browser. The
+editor shows a live preview rendered with sample data by the same code as the Pi.
+
+- Drag widgets to move them, drag the corner handle to resize; arrow keys move the
+  selected widget, Delete removes it
+- Widget options, display settings, screens and rotation rules are edited in forms
+- The time field previews other times of day; the toolbar shows which screen the
+  rules select at that time
+- The YAML tab shows and edits the raw configuration
+- Save validates and writes the file; the previous version is kept as `config.yaml.bak`.
+  A running host sends the new layout to the display immediately
+- "Show on panel" switches the connected display to the current screen; "Auto" returns
+  to rule-based rotation
+
+Saving rewrites the file, so comments in it are not preserved.
+
 ## Microsoft Graph
 
 New Outlook has no COM interface. Mail, calendar and Teams data are read through
@@ -90,6 +112,7 @@ the next start.
 | Command | Function |
 |---|---|
 | `edash-host run [--tray] [--demo]` | Run the host; `--demo` uses sample data instead of Microsoft 365 |
+| `edash-host edit [--port N] [--no-browser]` | Open the layout editor |
 | `edash-host preview [--screen ID] [--at TIME] [--scale N]` | Render screens with sample data to PNG |
 | `edash-host check` | Validate the configuration |
 | `edash-host init-config [--force]` | Copy the example configuration |

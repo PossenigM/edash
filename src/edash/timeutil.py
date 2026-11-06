@@ -81,6 +81,34 @@ def parse_weekdays(value: Any) -> frozenset[int]:
     return frozenset(days)
 
 
+def format_duration(value: timedelta) -> str:
+    """Inverse of :func:`parse_duration`: ``1h30m``, ``45s``, ``0s``."""
+    seconds = round(value.total_seconds())
+    parts = []
+    for unit, size in _UNITS.items():
+        count, seconds = divmod(seconds, size)
+        if count:
+            parts.append(f"{count}{unit}")
+    return "".join(parts) or "0s"
+
+
+def format_weekdays(days: frozenset[int]) -> str:
+    """Inverse of :func:`parse_weekdays`: ``mon-fri``, ``sat,sun``."""
+    runs: list[list[int]] = []
+    for day in sorted(days):
+        if runs and day == runs[-1][-1] + 1:
+            runs[-1].append(day)
+        else:
+            runs.append([day])
+    parts = []
+    for run in runs:
+        if len(run) >= 3:
+            parts.append(f"{WEEKDAYS[run[0]]}-{WEEKDAYS[run[-1]]}")
+        else:
+            parts.extend(WEEKDAYS[d] for d in run)
+    return ",".join(parts)
+
+
 Duration = Annotated[
     timedelta,
     PlainValidator(parse_duration),
