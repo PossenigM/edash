@@ -92,7 +92,12 @@ class WeatherSource(Source):
         days = [
             WeatherDay(date=date.fromisoformat(d), code=int(code), temp_max=hi, temp_min=lo, precip_prob=p)
             for d, code, hi, lo, p in zip(
-                daily["time"], daily["weather_code"], daily["temperature_2m_max"], daily["temperature_2m_min"], precip
+                daily["time"],
+                daily["weather_code"],
+                daily["temperature_2m_max"],
+                daily["temperature_2m_min"],
+                precip,
+                strict=False,
             )
             if None not in (code, hi, lo)
         ]
@@ -258,7 +263,11 @@ def build_sources(config: Config, session: requests.Session, platform: Platform,
     if demo:
         return sources + [DemoSource(topic) for topic in ("mail", "calendar", "teams")]
 
-    wanted = [(cfg, cls) for cfg, cls in ((s.mail, MailSource), (s.calendar, CalendarSource), (s.teams, TeamsSource)) if cfg.enabled]
+    wanted = [
+        (cfg, cls)
+        for cfg, cls in ((s.mail, MailSource), (s.calendar, CalendarSource), (s.teams, TeamsSource))
+        if cfg.enabled
+    ]
     if not wanted:
         return sources
     try:

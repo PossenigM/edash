@@ -15,9 +15,24 @@ from edash.host.platform.logind import LogindWatcher, event_for
         ("org.freedesktop.login1.Manager", "PrepareForShutdown", (False,), None),
         ("org.freedesktop.login1.Session", "Lock", (), "lock"),
         ("org.freedesktop.login1.Session", "Unlock", (), "unlock"),
-        ("org.freedesktop.DBus.Properties", "PropertiesChanged", ("org.freedesktop.login1.Session", {"LockedHint": ("b", True)}, []), "lock"),
-        ("org.freedesktop.DBus.Properties", "PropertiesChanged", ("org.freedesktop.login1.Session", {"LockedHint": ("b", False)}, []), "unlock"),
-        ("org.freedesktop.DBus.Properties", "PropertiesChanged", ("org.freedesktop.login1.Session", {"IdleHint": ("b", True)}, []), None),
+        (
+            "org.freedesktop.DBus.Properties",
+            "PropertiesChanged",
+            ("org.freedesktop.login1.Session", {"LockedHint": ("b", True)}, []),
+            "lock",
+        ),
+        (
+            "org.freedesktop.DBus.Properties",
+            "PropertiesChanged",
+            ("org.freedesktop.login1.Session", {"LockedHint": ("b", False)}, []),
+            "unlock",
+        ),
+        (
+            "org.freedesktop.DBus.Properties",
+            "PropertiesChanged",
+            ("org.freedesktop.login1.Session", {"IdleHint": ("b", True)}, []),
+            None,
+        ),
         ("org.freedesktop.login1.Manager", "SessionNew", ("2", "/x"), None),
     ],
 )

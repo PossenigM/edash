@@ -10,7 +10,7 @@ so every message is idempotent and the device never needs to persist anything.
 from __future__ import annotations
 
 from datetime import date
-from typing import Annotated, Any, Literal, Union
+from typing import Annotated, Any, Literal
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, TypeAdapter
 
@@ -20,9 +20,6 @@ from edash import PROTOCOL_VERSION, __version__
 class _Model(BaseModel):
     # Ignore unknown fields so a newer host can talk to an older device.
     model_config = ConfigDict(extra="ignore")
-
-
-# --- data payloads ---------------------------------------------------------
 
 
 class MailItem(_Model):
@@ -79,9 +76,6 @@ class WeatherData(_Model):
     is_day: bool = True
     units: Literal["C", "F"] = "C"
     days: list[WeatherDay] = Field(default_factory=list)
-
-
-# --- messages --------------------------------------------------------------
 
 
 class _Message(_Model):
@@ -172,7 +166,7 @@ DataMessage = MailMsg | CalendarMsg | TeamsMsg | WeatherMsg
 DATA_TOPICS = ("mail", "calendar", "teams", "weather")
 
 Message = Annotated[
-    Union[Hello, TimeSync, ConfigMsg, MailMsg, CalendarMsg, TeamsMsg, WeatherMsg, Presence, Command, Ack, Error, Status],
+    Hello | TimeSync | ConfigMsg | DataMessage | Presence | Command | Ack | Error | Status,
     Field(discriminator="type"),
 ]
 _message_adapter: TypeAdapter[Message] = TypeAdapter(Message)

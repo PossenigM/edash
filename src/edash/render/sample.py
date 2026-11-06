@@ -40,7 +40,9 @@ def sample_state(now: datetime) -> DashboardState:
     mail = MailData(
         unread_count=7,
         items=[
-            MailItem(sender="Facilities", subject="Office closed on Friday afternoon", received=now - timedelta(minutes=4)),
+            MailItem(
+                sender="Facilities", subject="Office closed on Friday afternoon", received=now - timedelta(minutes=4)
+            ),
             MailItem(
                 sender="Finance team",
                 subject="Action required: approve Q4 hardware budget",
@@ -55,7 +57,12 @@ def sample_state(now: datetime) -> DashboardState:
     teams = TeamsData(
         unread_count=2,
         items=[
-            ChatItem(chat="Platform team", sender="Sam", preview="Deploy is done, can you check the logs?", at=now - timedelta(minutes=2)),
+            ChatItem(
+                chat="Platform team",
+                sender="Sam",
+                preview="Deploy is done, can you check the logs?",
+                at=now - timedelta(minutes=2),
+            ),
             ChatItem(chat="Alex", sender="Alex", preview="Lunch at 12:30?", at=now - timedelta(minutes=20)),
             ChatItem(
                 chat="Hardware guild",
@@ -72,7 +79,13 @@ def sample_state(now: datetime) -> DashboardState:
         temperature=13.6,
         code=2,
         days=[
-            WeatherDay(date=(day0 + timedelta(days=i)).date(), code=codes[i], temp_max=16 - i, temp_min=7 - i / 2, precip_prob=20 * (i % 4))
+            WeatherDay(
+                date=(day0 + timedelta(days=i)).date(),
+                code=codes[i],
+                temp_max=16 - i,
+                temp_min=7 - i / 2,
+                precip_prob=20 * (i % 4),
+            )
             for i in range(7)
         ],
     )

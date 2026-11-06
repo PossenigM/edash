@@ -48,7 +48,12 @@ WAITING_CONFIG = DeviceConfig.model_validate(
                 "id": "waiting",
                 "widgets": [
                     {"type": "text", "pos": [1, 2], "size": [10, 2], "options": {"text": "eDash", "bold": True}},
-                    {"type": "text", "pos": [1, 4], "size": [10, 1], "options": {"text": "Waiting for the laptop…", "size": 24}},
+                    {
+                        "type": "text",
+                        "pos": [1, 4],
+                        "size": [10, 1],
+                        "options": {"text": "Waiting for the laptop…", "size": 24},
+                    },
                 ],
             }
         ]
@@ -70,8 +75,6 @@ class DeviceApp:
         self._dirty = True
         self._next_wake: datetime | None = None
         self._apply_config(WAITING_CONFIG)
-
-    # --- lifecycle --------------------------------------------------------
 
     def run(self) -> None:
         self.connection.start()
@@ -109,10 +112,8 @@ class DeviceApp:
             except queue.Empty:
                 break
 
-    # --- rendering --------------------------------------------------------
-
     def _apply_config(self, config: DeviceConfig) -> None:
-        screens, warnings = build_screens(config)  # raises ConfigError
+        screens, warnings = build_screens(config)
         for warning in warnings:
             log.warning("config: %s", warning)
         self.config = config
@@ -146,8 +147,6 @@ class DeviceApp:
         if connected != self.state.host_connected:
             self.state.host_connected = connected
             self._dirty = True
-
-    # --- messages ---------------------------------------------------------
 
     def _send(self, message) -> None:
         self.connection.send(message)

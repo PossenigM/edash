@@ -28,7 +28,9 @@ def test_meeting_active_and_not(now):
 
 def test_all_day_events_do_not_count_as_meetings(now):
     day = now.replace(hour=0, minute=0)
-    state = DashboardState(calendar=CalendarData(events=[Event(subject="Holiday", start=day, end=day + timedelta(days=1), all_day=True)]))
+    state = DashboardState(
+        calendar=CalendarData(events=[Event(subject="Holiday", start=day, end=day + timedelta(days=1), all_day=True)])
+    )
     assert not parse_condition("meeting_active")(state, now)
 
 
@@ -42,7 +44,9 @@ def test_counts_time_weekday_and_combination(now):
     assert not parse_condition("weekday in sat,sun")(state, now)
 
 
-@pytest.mark.parametrize("bad", ["", "foo", "unread_mail > lots", "time > 10:00", "location in office", "meeting_starts_in < soon"])
+@pytest.mark.parametrize(
+    "bad", ["", "foo", "unread_mail > lots", "time > 10:00", "location in office", "meeting_starts_in < soon"]
+)
 def test_invalid_conditions(bad):
     with pytest.raises(ValueError):
         parse_condition(bad)

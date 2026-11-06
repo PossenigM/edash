@@ -71,7 +71,6 @@ class NextMeeting(Widget):
         detail_h = line_height(detail_font)
         subject_box = Box(0, y, box.w, box.h - y - detail_h - 6)
 
-        # Largest subject font that fits in at most three lines.
         font = ctx.fonts.get("bold", 12)
         lines = wrap(event.subject, font, subject_box.w, max_lines=1)
         for size in range(min(72, subject_box.h), 11, -2):

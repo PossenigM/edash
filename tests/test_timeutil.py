@@ -7,7 +7,13 @@ from edash.timeutil import TimeRange, parse_duration, parse_weekdays
 
 @pytest.mark.parametrize(
     ("text", "expected"),
-    [("30s", timedelta(seconds=30)), ("45m", timedelta(minutes=45)), ("1h30m", timedelta(minutes=90)), ("2d", timedelta(days=2)), (90, timedelta(seconds=90))],
+    [
+        ("30s", timedelta(seconds=30)),
+        ("45m", timedelta(minutes=45)),
+        ("1h30m", timedelta(minutes=90)),
+        ("2d", timedelta(days=2)),
+        (90, timedelta(seconds=90)),
+    ],
 )
 def test_parse_duration(text, expected):
     assert parse_duration(text) == expected

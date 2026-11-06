@@ -28,12 +28,7 @@ class RefreshTracker:
     force_full: bool = False
 
     def decide(self, policy: RefreshPolicy, image: Image.Image, screen: str, now: datetime) -> Decision:
-        if (
-            self.force_full
-            or self.last_image is None
-            or screen != self.screen
-            or self.last_image.size != image.size
-        ):
+        if self.force_full or self.last_image is None or screen != self.screen or self.last_image.size != image.size:
             return "full"
         changed = ImageChops.logical_xor(self.last_image, image).getbbox()
         if changed is None:

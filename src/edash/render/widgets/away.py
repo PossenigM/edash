@@ -41,7 +41,9 @@ class AwayWidget(Widget):
         if o.show_next_meeting:
             event = ctx.state.next_event(now)
             if event:
-                texts.append((loc.t("next_meeting", subject=event.subject, t=loc.when(event.start, now)), 20, "regular"))
+                texts.append(
+                    (loc.t("next_meeting", subject=event.subject, t=loc.when(event.start, now)), 20, "regular")
+                )
 
         text_w = box.w - 40
         blocks = []  # (lines, font)

@@ -57,7 +57,12 @@ def _sun_at(draw: ImageDraw.ImageDraw, pen: _Pen, fcx: float, fcy: float, fr: fl
     for i in range(8):
         a = i * math.pi / 4
         draw.line(
-            (cx + math.cos(a) * r * 1.45, cy + math.sin(a) * r * 1.45, cx + math.cos(a) * r * 1.95, cy + math.sin(a) * r * 1.95),
+            (
+                cx + math.cos(a) * r * 1.45,
+                cy + math.sin(a) * r * 1.45,
+                cx + math.cos(a) * r * 1.95,
+                cy + math.sin(a) * r * 1.95,
+            ),
             fill=pen.fill,
             width=pen.lw,
         )
@@ -121,7 +126,6 @@ def thunder(draw: ImageDraw.ImageDraw, pen: _Pen) -> None:
 def drop(draw: ImageDraw.ImageDraw, pen: _Pen) -> None:
     draw.ellipse(pen.rect(0.24, 0.36, 0.76, 0.88), fill=pen.fill)
     draw.polygon([pen.p(0.5, 0.06), pen.p(0.26, 0.56), pen.p(0.74, 0.56)], fill=pen.fill)
-    # highlight
     draw.arc(pen.rect(0.34, 0.46, 0.66, 0.78), 110, 190, fill=pen.bg, width=pen.lw)
 
 

@@ -29,7 +29,7 @@ def test_each_partial_step_changes_the_frame(now):
     display = FakeDisplay()
     run_selftest(display, partial_steps=3, pause=0, sleep=lambda s: None, now=now)
     frames = display.images
-    for before, after in zip(frames, frames[1:]):
+    for before, after in zip(frames, frames[1:], strict=False):
         assert ImageChops.logical_xor(before, after).getbbox() is not None
 
 

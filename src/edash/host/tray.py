@@ -20,7 +20,8 @@ def _icon_image() -> Image.Image:
 
 def run_with_tray(app: HostApp) -> None:
     import pystray
-    from pystray import Menu, MenuItem as Item
+    from pystray import Menu
+    from pystray import MenuItem as Item
 
     worker = threading.Thread(target=app.run, name="host", daemon=True)
     worker.start()

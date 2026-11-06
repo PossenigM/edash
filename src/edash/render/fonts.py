@@ -1,4 +1,4 @@
-"""Font lookup. Drop ``regular.ttf`` and ``bold.ttf`` into ``edash/assets/fonts/`` to use your own."""
+"""Font lookup. ``regular.ttf`` and ``bold.ttf`` in ``edash/assets/fonts/`` override the system fonts."""
 
 from __future__ import annotations
 

@@ -23,8 +23,6 @@ class EventWatcher(Protocol):
 class Platform(ABC):
     name: str
 
-    # --- locations --------------------------------------------------------
-
     def config_dir(self) -> Path:
         return platformdirs.user_config_path("edash", appauthor=False)
 
@@ -40,8 +38,6 @@ class Platform(ABC):
     def token_cache_path(self) -> Path:
         return self.cache_dir() / "msal_token_cache.bin"
 
-    # --- serial port ------------------------------------------------------
-
     def port_candidates(self) -> list[str]:
         """Serial ports that belong to an eDash gadget, most likely app port first.
 
@@ -56,8 +52,6 @@ class Platform(ABC):
 
     def _port_sort_key(self, port: Any) -> tuple:
         return tuple(int(t) if t.isdigit() else t for t in re.split(r"(\d+)", port.device))
-
-    # --- integration ------------------------------------------------------
 
     def token_persistence(self, path: Path):
         """Encrypted storage for the Microsoft login token (msal-extensions)."""

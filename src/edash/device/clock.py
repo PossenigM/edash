@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import time
-from datetime import datetime, timedelta, timezone, tzinfo
+from datetime import UTC, datetime, timedelta, tzinfo
 
 log = logging.getLogger(__name__)
 
@@ -23,12 +23,12 @@ class Clock:
         self.synced = False
 
     def now(self) -> datetime:
-        utc = datetime.now(timezone.utc) + self._offset
+        utc = datetime.now(UTC) + self._offset
         return utc.astimezone(self._tz) if self._tz else utc.astimezone()
 
     def sync(self, host_now: datetime) -> None:
         self._tz = host_now.tzinfo
-        delta = host_now - datetime.now(timezone.utc)
+        delta = host_now - datetime.now(UTC)
         if abs(delta) > SET_THRESHOLD:
             try:
                 time.clock_settime(time.CLOCK_REALTIME, host_now.timestamp())

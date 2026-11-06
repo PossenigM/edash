@@ -17,7 +17,10 @@ def test_systemd_unit_runs_host(tmp_path):
 
 
 def test_linux_sorts_app_interface_first():
-    ports = [SimpleNamespace(device="/dev/ttyACM1", location="1-2:1.2"), SimpleNamespace(device="/dev/ttyACM0", location="1-2:1.0")]
+    ports = [
+        SimpleNamespace(device="/dev/ttyACM1", location="1-2:1.2"),
+        SimpleNamespace(device="/dev/ttyACM0", location="1-2:1.0"),
+    ]
     ports.sort(key=LinuxPlatform()._port_sort_key)
     assert ports[0].device == "/dev/ttyACM0"
 

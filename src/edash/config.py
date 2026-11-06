@@ -27,9 +27,6 @@ class _Model(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
-# --- device part -----------------------------------------------------------
-
-
 class GridConfig(_Model):
     cols: int = Field(12, ge=1)
     rows: int = Field(8, ge=1)
@@ -40,7 +37,7 @@ class GridConfig(_Model):
 class DisplayConfig(_Model):
     width: int = Field(800, gt=0)
     height: int = Field(480, gt=0)
-    language: Literal["en", "de"] = "en"  # day/month names and widget texts
+    language: Literal["en", "de"] = "en"
     # Degrees the rendered image is turned clockwise before it goes to the panel.
     rotation: Literal[0, 90, 180, 270] = 0
     full_refresh_every: Duration = timedelta(minutes=30)
@@ -62,7 +59,7 @@ class WidgetConfig(_Model):
     box: tuple[int, int, int, int] | None = None  # pixels (x, y, w, h), instead of pos/size
     title: str | None = None
     frame: bool = False
-    show_stale: bool = True  # "as of 09:12" marker when the widget's data is outdated
+    show_stale: bool = True
     options: dict[str, Any] = Field(default_factory=dict)
 
     @model_validator(mode="after")
@@ -131,15 +128,12 @@ class DeviceConfig(_Model):
         return self
 
 
-# --- host part -------------------------------------------------------------
-
-
 class HostConfig(_Model):
     port: str = "auto"  # "auto", or e.g. "COM5" / "/dev/edash"
     time_sync_every: Duration = timedelta(minutes=5)
     resend_every: Duration = timedelta(minutes=10)
     control_port: int = Field(47811, ge=1024, le=65535)
-    proxy: str | None = None  # e.g. "http://proxy.corp:8080"
+    proxy: str | None = None
 
 
 class GraphConfig(_Model):
@@ -170,7 +164,7 @@ class TeamsSourceConfig(_Model):
 
 class WeatherSourceConfig(_Model):
     enabled: bool = True
-    name: str | None = None  # label shown on the display
+    name: str | None = None
     latitude: float = Field(ge=-90, le=90)
     longitude: float = Field(ge=-180, le=180)
     days: int = Field(4, ge=1, le=16)  # forecast days including today

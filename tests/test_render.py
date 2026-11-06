@@ -44,7 +44,12 @@ def test_rotation_turns_image_for_panel():
 
 def test_preview_writes_pngs(example_config, now, tmp_path):
     paths, notes = render_preview(example_config, tmp_path, now=now, scale=2)
-    assert [p.name for p in paths] == ["preview-main.png", "preview-meeting.png", "preview-idle.png", "preview-_away.png"]
+    assert [p.name for p in paths] == [
+        "preview-main.png",
+        "preview-meeting.png",
+        "preview-idle.png",
+        "preview-_away.png",
+    ]
     assert notes == []
     from PIL import Image
 

@@ -105,7 +105,9 @@ class Renderer:
                 self._draw_stale_marker(draw, title_box or content, as_of, now, in_title=title_box is not None)
         return tile
 
-    def _draw_stale_marker(self, draw: ImageDraw.ImageDraw, area: Box, as_of: datetime, now: datetime, in_title: bool) -> None:
+    def _draw_stale_marker(
+        self, draw: ImageDraw.ImageDraw, area: Box, as_of: datetime, now: datetime, in_title: bool
+    ) -> None:
         """Inverted "as of 09:12" label: right end of the title bar, or the top-right corner
         (where list widgets have their header and the weather widget has free space)."""
         text = self.locale.t("as_of", t=self.locale.when(as_of, now))

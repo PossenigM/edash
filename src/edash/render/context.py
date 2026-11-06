@@ -10,7 +10,6 @@ from edash.render.i18n import EN, Locale
 from edash.render.layout import Box
 from edash.state import DashboardState
 
-# Pixel values of a mode "1" image.
 BLACK = 0
 WHITE = 255
 

@@ -35,7 +35,12 @@ def test_mail(now):
             "/me/mailFolders/inbox": {"unreadItemCount": 12},
             "/me/mailFolders/inbox/messages": {
                 "value": [
-                    {"subject": "Hi", "from": {"emailAddress": {"name": "Ann"}}, "receivedDateTime": "2026-10-19T07:00:00Z", "importance": "high"},
+                    {
+                        "subject": "Hi",
+                        "from": {"emailAddress": {"name": "Ann"}},
+                        "receivedDateTime": "2026-10-19T07:00:00Z",
+                        "importance": "high",
+                    },
                     {"subject": None, "from": None, "receivedDateTime": "2026-10-19T06:00:00Z"},
                 ]
             },
@@ -43,7 +48,10 @@ def test_mail(now):
     )
     data = MailSource(MailSourceConfig(), graph, POLL).fetch(now).data
     assert data.unread_count == 12
-    assert [(m.sender, m.subject, m.important) for m in data.items] == [("Ann", "Hi", True), ("Unknown sender", "(no subject)", False)]
+    assert [(m.sender, m.subject, m.important) for m in data.items] == [
+        ("Ann", "Hi", True),
+        ("Unknown sender", "(no subject)", False),
+    ]
 
 
 def test_calendar_skips_cancelled_and_declined(now):

@@ -21,7 +21,17 @@ from edash.host.graph import NotLoggedIn
 from edash.host.platform import Platform
 from edash.host.presence import PresenceTracker, SystemEvent
 from edash.host.sources import Source, build_sources
-from edash.link import Connected, Connection, Disconnected, Invalid, LineLink, LinkEvent, ProtocolError, Received, Stream
+from edash.link import (
+    Connected,
+    Connection,
+    Disconnected,
+    Invalid,
+    LineLink,
+    LinkEvent,
+    ProtocolError,
+    Received,
+    Stream,
+)
 from edash.protocol import Ack, Command, ConfigMsg, DataMessage, Error, Hello, Status, TimeSync
 
 log = logging.getLogger(__name__)
@@ -77,7 +87,7 @@ class HostApp:
     def __init__(self, config_path: Path, platform: Platform, demo: bool = False):
         self.config_path = config_path
         self.platform = platform
-        self.demo = demo  # sample mail/calendar/Teams data instead of Microsoft Graph
+        self.demo = demo
         self.config: Config = load_config(config_path)
         self._config_mtime = config_path.stat().st_mtime
         self.status = HostStatus()
@@ -92,8 +102,6 @@ class HostApp:
         self._scheduled = self._schedule_sources()
         self.connection = Connection(self._open_device, self._on_event, name="device")
 
-    # --- lifecycle --------------------------------------------------------
-
     def open_control_server(self) -> None:
         """Bind the local control port. Doubles as the single-instance check."""
         if self._server is not None:
@@ -102,7 +110,9 @@ class HostApp:
         try:
             self._server = _ControlServer(("127.0.0.1", port), self)
         except OSError as err:
-            raise AlreadyRunning(f"Control port {port} is in use. Is another edash-host already running? ({err})") from None
+            raise AlreadyRunning(
+                f"Control port {port} is in use. Is another edash-host already running? ({err})"
+            ) from None
 
     def run(self) -> None:
         self.open_control_server()
@@ -140,8 +150,6 @@ class HostApp:
         message = self._presence.handle(event, datetime.now().astimezone())
         if message is not None:
             self.connection.send(message)
-
-    # --- main loop --------------------------------------------------------
 
     def _tick(self) -> None:
         force = self._reload_requested.is_set()
@@ -184,11 +192,9 @@ class HostApp:
         item.next_run = time.monotonic() + source.interval.total_seconds()
 
     def _set_status(self, item: _Scheduled, status: str, level: int) -> None:
-        if status != item.status:  # log changes only, not every poll
+        if status != item.status:
             log.log(level, "%s: %s", item.source.topic, status)
         item.status = status
-
-    # --- config -----------------------------------------------------------
 
     def _make_session(self) -> requests.Session:
         session = requests.Session()
@@ -220,8 +226,6 @@ class HostApp:
             self._scheduled = self._schedule_sources()
         self.connection.send(ConfigMsg(config=new.device_payload()))
         log.info("config reloaded")
-
-    # --- device link ------------------------------------------------------
 
     def _open_device(self) -> Stream:
         port = self.config.host.port
@@ -273,8 +277,6 @@ class HostApp:
                 self.status.last_device_status = status.model_dump(mode="json")
             case Received(message=Ack()):
                 pass
-
-    # --- control (CLI `edash-host ctl`, tray) -----------------------------
 
     def control(self, request: dict[str, Any]) -> dict[str, Any]:
         action = request.get("action")

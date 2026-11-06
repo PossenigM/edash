@@ -52,7 +52,20 @@ class Locale:
 EN = Locale(
     days=("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"),
     days_short=("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"),
-    months=("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"),
+    months=(
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+    ),
     months_short=("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"),
     strings={
         "date_long": "%A, %d %B",
@@ -99,7 +112,20 @@ EN = Locale(
 DE = Locale(
     days=("Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"),
     days_short=("Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"),
-    months=("Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"),
+    months=(
+        "Januar",
+        "Februar",
+        "März",
+        "April",
+        "Mai",
+        "Juni",
+        "Juli",
+        "August",
+        "September",
+        "Oktober",
+        "November",
+        "Dezember",
+    ),
     months_short=("Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"),
     strings={
         "date_long": "%A, %d. %B",

@@ -11,9 +11,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Windows = today's laptop, Ubuntu = future Linux laptop and the Pi's OS family.
         os: [ubuntu-latest, windows-latest]
-        # 3.11 = oldest supported, 3.13 = Raspberry Pi OS (Trixie).
+        # Oldest supported version, and the version shipped with Raspberry Pi OS (Trixie).
         python: ["3.11", "3.13"]
     steps:
       - uses: actions/checkout@v4
@@ -37,6 +36,18 @@ jobs:
         with:
           name: previews
           path: previews/*.png
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python -m pip install "ruff==0.17.4"
+      - run: ruff check src tests
+      - run: ruff format --check src tests
 
   pi-scripts:
     name: Pi shell scripts

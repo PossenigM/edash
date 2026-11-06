@@ -78,7 +78,10 @@ def test_rule_switches_to_meeting_screen(app, example_config, now):
     deliver(app, ConfigMsg(config=example_config.device_payload()))
     app.step(max_wait=0)
     start = now + timedelta(minutes=4)
-    deliver(app, CalendarMsg(data=CalendarData(events=[Event(subject="Sync", start=start, end=start + timedelta(minutes=30))])))
+    deliver(
+        app,
+        CalendarMsg(data=CalendarData(events=[Event(subject="Sync", start=start, end=start + timedelta(minutes=30))])),
+    )
     app.clock._now = now + timedelta(minutes=3)  # past min_dwell since the first selection
     app.step(max_wait=0)
     assert app._refresh.screen == "meeting"

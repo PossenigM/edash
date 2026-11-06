@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -26,7 +26,7 @@ class NotLoggedIn(Exception):
 class GraphError(Exception):
     def __init__(self, message: str, retry_after: float | None = None):
         super().__init__(message)
-        self.retry_after = retry_after  # seconds, when Graph asks us to back off
+        self.retry_after = retry_after  # seconds
 
 
 DEFAULT_RETRY_AFTER_S = 60.0
@@ -119,6 +119,6 @@ def parse_graph_datetime(value: str) -> datetime:
     if "." in value:
         head, _, frac = value.partition(".")
         digits = "".join(c for c in frac if c.isdigit())
-        value = f"{head}.{digits[:6]}{frac[len(digits):]}"
+        value = f"{head}.{digits[:6]}{frac[len(digits) :]}"
     dt = datetime.fromisoformat(value)
-    return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+    return dt if dt.tzinfo else dt.replace(tzinfo=UTC)

@@ -6,7 +6,6 @@ from pydantic import Field
 
 from edash.protocol import Event
 from edash.render.context import BLACK, WHITE, RenderContext
-from edash.render.layout import Box
 from edash.render.registry import Widget, WidgetOptions, widget
 from edash.render.text import draw_line, line_height, text_width
 from edash.render.widgets._common import draw_placeholder
@@ -89,7 +88,15 @@ class Calendar(Widget):
             fg = WHITE if active else BLACK
             if active:
                 draw.rectangle((0, y - 2, box.w - 1, y + row_h - 4), fill=BLACK)
-            draw_line(draw, 2, y, loc.t("all_day") if ev.all_day else f"{start:%H:%M}", small if ev.all_day else bold, time_w - 4, fg)
+            draw_line(
+                draw,
+                2,
+                y,
+                loc.t("all_day") if ev.all_day else f"{start:%H:%M}",
+                small if ev.all_day else bold,
+                time_w - 4,
+                fg,
+            )
             draw_line(draw, time_w, y, ev.subject, bold, text_w - 2, fg)
             if details:
                 draw_line(draw, time_w, y + line_height(bold), " · ".join(details), small, text_w - 2, fg)

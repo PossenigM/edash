@@ -1,7 +1,7 @@
 """Lock, sleep and shutdown events from systemd-logind over D-Bus (jeepney, pure Python).
 
 Holds a "delay" inhibitor while running: on suspend/shutdown logind waits
-until we release it (at most InhibitDelayMaxSec, 5 s by default), which gives
+until it is released (at most InhibitDelayMaxSec, 5 s by default), which gives
 the display time to show the away screen before USB power goes.
 """
 
@@ -79,7 +79,13 @@ class LogindWatcher:
             MatchRule(type="signal", sender=LOGIN1, interface=MANAGER, member="PrepareForSleep"),
             MatchRule(type="signal", sender=LOGIN1, interface=MANAGER, member="PrepareForShutdown"),
             MatchRule(type="signal", sender=LOGIN1, interface=SESSION),
-            MatchRule(type="signal", sender=LOGIN1, interface=PROPERTIES, member="PropertiesChanged", path_namespace="/org/freedesktop/login1/session"),
+            MatchRule(
+                type="signal",
+                sender=LOGIN1,
+                interface=PROPERTIES,
+                member="PropertiesChanged",
+                path_namespace="/org/freedesktop/login1/session",
+            ),
         ]
         with conn:
             for rule in rules:
@@ -115,7 +121,9 @@ class LogindWatcher:
         from jeepney import DBusAddress, new_method_call
 
         manager = DBusAddress("/org/freedesktop/login1", bus_name=LOGIN1, interface=MANAGER)
-        call = new_method_call(manager, "Inhibit", "ssss", ("sleep:shutdown", "eDash", "Show the away screen on the display", "delay"))
+        call = new_method_call(
+            manager, "Inhibit", "ssss", ("sleep:shutdown", "eDash", "Show the away screen on the display", "delay")
+        )
         try:
             reply = conn.send_and_get_reply(call, timeout=5)
             self._inhibitor = reply.body[0]

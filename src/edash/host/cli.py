@@ -59,9 +59,6 @@ def main(argv: list[str] | None = None) -> None:
         sys.exit(str(err))
 
 
-# --- helpers -----------------------------------------------------------------
-
-
 def _platform():
     from edash.host.platform import get_platform
 
@@ -83,9 +80,6 @@ def _require_config(path: Path) -> None:
         sys.exit(f"Config {path} not found. Create it with `edash-host init-config`.")
 
 
-# --- commands ----------------------------------------------------------------
-
-
 def cmd_run(args: argparse.Namespace) -> None:
     from edash.host.app import AlreadyRunning, HostApp
 
@@ -94,7 +88,9 @@ def cmd_run(args: argparse.Namespace) -> None:
     _require_config(path)
     log_dir = platform.log_dir()
     log_dir.mkdir(parents=True, exist_ok=True)
-    handler = logging.handlers.RotatingFileHandler(log_dir / "host.log", maxBytes=1_000_000, backupCount=3, encoding="utf-8")
+    handler = logging.handlers.RotatingFileHandler(
+        log_dir / "host.log", maxBytes=1_000_000, backupCount=3, encoding="utf-8"
+    )
     handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
     logging.getLogger().addHandler(handler)
 

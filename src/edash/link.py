@@ -16,7 +16,7 @@ log = logging.getLogger(__name__)
 
 
 class Stream(Protocol):
-    """What we need from a pyserial ``Serial`` (read with a timeout)."""
+    """The subset of pyserial's ``Serial`` used here (reads with a timeout)."""
 
     def read(self, size: int = 1) -> bytes: ...
     def write(self, data: bytes) -> int | None: ...

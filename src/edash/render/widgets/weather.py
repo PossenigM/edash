@@ -33,7 +33,6 @@ class Weather(Widget):
         future = [d for d in data.days if d.date > today][: o.days]
         now_box, forecast_box = box.split_top(round(box.h * 0.55) if future else box.h)
 
-        # Current conditions: icon, big temperature, today's range and location.
         icon_s = now_box.h
         draw_icon(draw, weather_icon(data.code, data.is_day), Box(0, 0, icon_s, icon_s))
         tx = icon_s + 10
@@ -68,7 +67,6 @@ class Weather(Widget):
             label = ctx.locale.strftime(day.date, "%a")
             temps = f"{round(day.temp_max)}°/{round(day.temp_min)}°"
             if col.w >= col.h * 2.2:
-                # Wide, short columns: icon left, day and temperatures stacked right.
                 icon_s = min(col.h, round(col.w * 0.42))
                 draw_icon(draw, weather_icon(day.code), Box(col.x, col.y, icon_s, col.h))
                 tx, tw = col.x + icon_s + 4, col.w - icon_s - 4

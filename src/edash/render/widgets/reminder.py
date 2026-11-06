@@ -104,7 +104,13 @@ class Reminder(Widget):
         x = inner.x
         if o.icon:
             icon_s = min(inner.h, inner.w // 3)
-            draw_icon(draw, o.icon, Box(inner.x, inner.y + (inner.h - icon_s) // 2, icon_s, icon_s), fill=fg, bg=BLACK if status.due else WHITE)
+            draw_icon(
+                draw,
+                o.icon,
+                Box(inner.x, inner.y + (inner.h - icon_s) // 2, icon_s, icon_s),
+                fill=fg,
+                bg=BLACK if status.due else WHITE,
+            )
             x += icon_s + 8
         text_w = inner.right - x
 
