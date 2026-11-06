@@ -57,6 +57,9 @@ edash-host edit
 Starts a local web server on `127.0.0.1` and opens the editor in the browser. The
 editor shows a live preview rendered with sample data by the same code as the Pi.
 
+![Editor with a reminder selected](images/editor-layout.png)
+![Editor with the idle screen at 20:20](images/editor-idle.png)
+
 - Drag widgets to move them, drag the corner handle to resize; arrow keys move the
   selected widget, Delete removes it
 - Widget options, display settings, screens and rotation rules are edited in forms

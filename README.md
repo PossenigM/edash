@@ -66,7 +66,11 @@ python -m venv .venv
 .venv/bin/edash-host preview --config src/edash/assets/config.example.yaml --scale 2
 ```
 
-`edash-host edit` opens the layout editor in the browser. With the Pi connected,
+`edash-host edit` opens the layout editor in the browser:
+
+![Layout editor](docs/images/editor-layout.png)
+
+With the Pi connected,
 `edash-host run --demo` drives the panel with live weather and sample mail, calendar
 and Teams data, without a Microsoft 365 account.
 
