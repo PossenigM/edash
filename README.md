@@ -83,6 +83,10 @@ and Teams data, without a Microsoft 365 account.
 - [Configuration](docs/configuration.md): layout, widgets, screen rules, language
 - [Development](docs/development.md): repository layout, protocol, tests, adding widgets
 
+## License
+
+[MIT](LICENSE)
+
 ## Status
 
 Tested with a Linux host and demo data. Not yet tested: Windows host on real hardware,
