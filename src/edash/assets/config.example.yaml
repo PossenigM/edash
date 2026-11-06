@@ -69,7 +69,8 @@ screens:
     widgets:
       - { type: clock,   pos: [0, 0], size: [12, 5], options: { date_ratio: 0.22 } }
       - { type: weather, pos: [1, 5], size: [10, 2], options: { days: 4 } }
-      - { type: status,  pos: [0, 7], size: [12, 1] }
+      - { type: logo,    pos: [0, 7], size: [3, 1], options: { text: eDash, align: left } }
+      - { type: status,  pos: [3, 7], size: [9, 1] }
 
 # Which screen to show. The first matching rule wins, otherwise `default`.
 # Variables: meeting_active, meeting_starts_in, unread_mail, unread_teams,

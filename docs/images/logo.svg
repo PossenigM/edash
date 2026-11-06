@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <clipPath id="left"><path d="M0 0 H40 L24 64 H0 Z"/></clipPath>
+    <clipPath id="right"><path d="M40 0 H64 V64 H24 Z"/></clipPath>
+    <rect id="tile" x="3" y="3" width="58" height="58" rx="13"/>
+  </defs>
+  <use href="#tile" fill="#fff" stroke="#111" stroke-width="4"/>
+  <g clip-path="url(#left)"><use href="#tile" fill="#111"/></g>
+  <g fill="none" stroke-width="7">
+    <path clip-path="url(#left)" d="M19 33 H45 A13 13 0 1 0 41.96 41.36" stroke="#fff"/>
+    <path clip-path="url(#right)" d="M19 33 H45 A13 13 0 1 0 41.96 41.36" stroke="#111"/>
+  </g>
+</svg>

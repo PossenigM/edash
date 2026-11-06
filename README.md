@@ -1,4 +1,4 @@
-# eDash
+# <img src="docs/images/logo.svg" alt="" width="40" align="top"> eDash
 
 [![CI](https://github.com/PossenigM/edash/actions/workflows/ci.yml/badge.svg)](https://github.com/PossenigM/edash/actions/workflows/ci.yml)
 
@@ -12,6 +12,7 @@ power and carries the data. No network connection is required on the Pi.
 
 - Clock, weather, calendar, next meeting, unread mail, Teams chats and recurring reminders
 - Layout defined in one YAML file: widgets, positions, sizes and multiple screens
+- Browser-based layout editor with live preview and drag-and-drop placement
 - Rule-based screen rotation, e.g. a meeting screen five minutes before a meeting starts
 - Away screen when the laptop is locked, suspended or shut down
 - Outdated data is marked with its fetch time
@@ -58,8 +59,9 @@ python -m venv .venv
 .venv/bin/edash-host preview --config src/edash/assets/config.example.yaml --scale 2
 ```
 
-With the Pi connected, `edash-host run --demo` drives the panel with live weather
-and sample mail, calendar and Teams data, without a Microsoft 365 account.
+`edash-host edit` opens the layout editor in the browser. With the Pi connected,
+`edash-host run --demo` drives the panel with live weather and sample mail, calendar
+and Teams data, without a Microsoft 365 account.
 
 ## Documentation
 

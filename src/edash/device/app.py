@@ -47,7 +47,7 @@ WAITING_CONFIG = DeviceConfig.model_validate(
             {
                 "id": "waiting",
                 "widgets": [
-                    {"type": "text", "pos": [1, 2], "size": [10, 2], "options": {"text": "eDash", "bold": True}},
+                    {"type": "logo", "pos": [1, 2], "size": [10, 2], "options": {"text": "eDash"}},
                     {
                         "type": "text",
                         "pos": [1, 4],

@@ -63,6 +63,7 @@ screens:
 | `teams` | Recent chats, unread marked | `max_items`, `font_size`, `show_header`, `unread_only`, `empty_text` |
 | `reminder` | Recurring reminder, inverted when due | `label`, `every`, `active`, `days`, `highlight_for`, `icon`, `due_text` |
 | `text` | Static text | `text`, `size`, `bold`, `align`, `invert` |
+| `logo` | eDash logo, optionally followed by a text | `text`, `align` |
 | `status` | Host connection and last update | `font_size`, `align` |
 | `away` | Away reason and next meeting, for custom away screens | `title`, `message`, `show_next_meeting` |
 
@@ -101,8 +102,8 @@ combined with `and` and negated with `not`.
 ## Away screen
 
 While the laptop is locked, suspended or shut down, or the host has stopped, the
-display shows the built-in away screen with the reason, the time since and the next
-meeting. It has no clock: the Pi may lose power together with the laptop, and a
+display shows the built-in away screen with the reason, the time since, the next
+meeting and the logo. It has no clock: the Pi may lose power together with the laptop, and a
 frozen clock would show a wrong time. `rotation.away_screen` selects a custom screen
 instead; the `away` widget provides the same content there.
 

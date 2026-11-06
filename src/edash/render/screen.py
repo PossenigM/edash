@@ -29,7 +29,14 @@ def builtin_away_screen(config: DeviceConfig) -> ScreenConfig:
     grid = config.display.grid
     return ScreenConfig(
         id=BUILTIN_AWAY_SCREEN,
-        widgets=[WidgetConfig(type="away", pos=(0, 0), size=(grid.cols, grid.rows), show_stale=False)],
+        widgets=[
+            WidgetConfig(type="away", pos=(0, 0), size=(grid.cols, max(1, grid.rows - 1)), show_stale=False),
+            *(
+                [WidgetConfig(type="logo", pos=(0, grid.rows - 1), size=(grid.cols, 1), options={"text": "eDash"})]
+                if grid.rows > 1
+                else []
+            ),
+        ],
     )
 
 
