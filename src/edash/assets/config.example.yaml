@@ -1,8 +1,8 @@
 # eDash configuration.
 #
-# Lives on the laptop. edash-host watches this file and pushes the display,
-# screens and rotation sections to the Pi whenever you save it.
-# Try layouts without hardware:  edash-host preview --config this-file.yaml
+# Read by edash-host on the laptop. The display, screens and rotation sections
+# are pushed to the Pi whenever the file changes.
+# Preview without hardware: edash-host preview --config <file>
 #
 # Durations: 30s, 45m, 1h30m, 2d    Time windows: "08:00-17:00"    Days: mon-fri, sat,sun
 
@@ -13,7 +13,7 @@ host:
 
 sources:
   graph:
-    client_id: null          # Entra ID app registration, see README "Microsoft Graph"
+    client_id: null          # Entra ID app registration, see docs/host-setup.md
     tenant: organizations
     poll: 60s
   mail:
@@ -77,8 +77,8 @@ screens:
 rotation:
   default: main
   min_dwell: 2m
-  # While the laptop is locked, asleep or shut down, the display shows a built-in
-  # away screen. To use your own, name a screen here (an `away` widget shows the reason).
+  # Shown while the laptop is locked, asleep or shut down. Default: built-in away screen.
+  # A custom screen can use the `away` widget.
   # away_screen: my_away
   rules:
     - { when: "meeting_starts_in <= 5m", screen: meeting }

@@ -36,7 +36,7 @@ raspi-config nonint do_overlayfs 0
 echo
 wifi=$(nmcli -t -f NAME,TYPE connection show | awk -F: '$2 == "802-11-wireless" { print "    " $1 }')
 if [ -n "$wifi" ]; then
-    printf 'Saved Wi-Fi networks (joined when you switch Wi-Fi on):\n%s\n' "$wifi"
+    printf 'Saved Wi-Fi networks (joined when Wi-Fi is switched on):\n%s\n' "$wifi"
 else
     echo "No Wi-Fi network saved: switching Wi-Fi on will not connect anywhere."
 fi
