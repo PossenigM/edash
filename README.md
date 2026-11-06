@@ -41,11 +41,11 @@ keep running between data updates. Host and device share the rendering code, so
 
 | Part | Notes |
 |---|---|
-| Raspberry Pi Zero 2 W | Uses USB device mode on the micro-USB data port |
-| Waveshare 7.5" e-Paper HAT (V2) | 800×480, black/white, driver `epd7in5_V2` |
+| Raspberry Pi Zero 2 W | With GPIO pin header (Zero 2 WH or soldered); uses USB device mode on the micro-USB data port |
+| Waveshare 7.5" e-Paper HAT (V2) | 800×480, black/white, driver `epd7in5_V2`; the driver board sits next to the Pi and connects with the supplied 8-wire cable |
 | microSD card | 8 GB or more |
 | Micro-USB data cable | Connects the Pi's **USB** port (not PWR) to the laptop |
-| Enclosure | 3D-printable front panel, back plate and kickstand |
+| Enclosure | 3D-printed front panel, back plate, cover and kickstand; four threaded inserts and screws hold the cover |
 
 Measured on the V2 panel: full refresh 4.1 s, partial refresh 0.7 s.
 
@@ -55,6 +55,8 @@ Measured on the V2 panel: full refresh 4.1 s, partial refresh 0.7 s.
 | Idle screen | Meeting screen | Away screen |
 | ![Startup screen](docs/images/photo-startup.jpg) | ![Back with kickstand](docs/images/photo-back.jpg) | ![Rendered main screen](docs/images/screen-main.png) |
 | Startup screen | Back with kickstand | Rendered main screen (800×480) |
+| ![Electronics compartment](docs/images/photo-electronics.jpg) | ![Cover](docs/images/photo-cover.jpg) | ![Kickstand](docs/images/photo-kickstand.jpg) |
+| Pi and driver board in the back plate | Vented cover | Kickstand |
 
 ## Quick start
 
